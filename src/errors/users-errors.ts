@@ -23,4 +23,9 @@ export const usersErrorsValidator = {
     message: "code is incorrectly",
     field: "code"
   },
+
+  recoveryCodeError: {
+    message: "recoveryCodeError is incorrectly",
+    field: "recoveryCodeError"
+  },  
 }
