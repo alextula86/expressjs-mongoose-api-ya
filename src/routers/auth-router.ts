@@ -5,6 +5,7 @@ import {
   authRefreshTokenMiddleware,
   loginOrEmailUserValidation,
   passwordUserValidation,
+  newPasswordUserValidation,
   loginUserValidation,
   emailUserValidation,
   codeUserValidation,
@@ -76,7 +77,7 @@ const middlewaresRecoveryCode = [
 
 const middlewaresConfirmPasswordModel = [
   сountRequestsMiddleware,
-  passwordUserValidation,
+  newPasswordUserValidation,
   inputValidationMiddleware,
   existsUserByRecoveryCode,
 ]
