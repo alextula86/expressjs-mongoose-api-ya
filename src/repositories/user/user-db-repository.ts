@@ -82,6 +82,15 @@ export const userRepository: RepositoryUserType = {
 
     return foundUser
   },
+  async findByRecoveryCode(code) {
+    const foundUser: UserType | null = await userCollection.findOne({ 'passwordRecovery.recoveryCode': code })
+
+    if (!foundUser) {
+      return null
+    }
+
+    return foundUser
+  },
   async createdUser(createdUser) {
     await userCollection.insertOne(createdUser)
 
@@ -105,6 +114,27 @@ export const userRepository: RepositoryUserType = {
     const result = await userCollection.updateOne({ 'accountData.email': email }, {
       $set: {
         'emailConfirmation.confirmationCode': code
+      }
+    })
+
+    return result.modifiedCount === 1
+  },
+  async updateRecoveryCodeByEmail(email, recoveryCode, expirationDate) {
+    const result = await userCollection.updateOne({ 'accountData.email': email }, {
+      $set: {
+        'passwordRecovery.recoveryCode': recoveryCode,
+        'passwordRecovery.expirationDate': expirationDate,
+        'passwordRecovery.isRecovered': false,
+      }
+    })
+
+    return result.modifiedCount === 1
+  },
+  async updatedUserPassword(passwordHash, recoveryCode) {
+    const result = await userCollection.updateOne({ 'passwordRecovery.recoveryCode': recoveryCode }, {
+      $set: {
+        'accountData.passwordHash': passwordHash,
+        'passwordRecovery.isRecovered': true,
       }
     })
 

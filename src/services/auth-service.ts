@@ -31,6 +31,11 @@ export const authService: ServiceAuthType = {
         expirationDate: add(new Date(), { hours: 1, minutes: 30 }),
         isConfirmed: false,
       },
+      passwordRecovery: {
+        recoveryCode: '',
+        expirationDate: new Date(),
+        isRecovered: true,
+      },
       refreshToken: '',
     }
 
@@ -148,6 +153,35 @@ export const authService: ServiceAuthType = {
       return false
     }
   },
+  // Отправка кода для востановления пароля
+  async passwordRecoveryCode(email) {
+    // Генерируем код для востановления пароля 
+    const recoveryCode = generateUUID()
+    // Генерируем дату истечения востановления пароля
+    const expirationDate = add(new Date(), { hours: 1, minutes: 30 })
+    // Обновляем код востановления пароля 
+    const isUpdateRecoveryCodeByEmail = await userRepository.updateRecoveryCodeByEmail(email, recoveryCode, expirationDate)
+
+    try {
+      // Если обновление кода подтверждения email прошло успешно, отправляем письмо
+      if (isUpdateRecoveryCodeByEmail) {
+        await emailManager.sendEmailWithRecoveryCode(email, recoveryCode)
+      }
+      // Возвращаем результат обнорвления кода востановления пароля
+      return isUpdateRecoveryCodeByEmail
+    } catch (error) {
+      // Возвращаем false
+      return false
+    }
+  },
+  async updatedUserPassword(newPassword, recoveryCode) {
+    const passwordSalt = await bcrypt.genSaltSync(10)
+    const passwordHash = await this._generateHash(newPassword, passwordSalt)
+    
+    const isUpdatedUserPassword = await userRepository.updatedUserPassword(passwordHash, recoveryCode)
+
+    return isUpdatedUserPassword
+  },  
   // Проверяем существует ли пользователь по логину
   async checkExistsUserByLoginOrEmail(loginOrEmail) {
     const user = await userRepository.findByLoginOrEmail(loginOrEmail)
@@ -178,6 +212,16 @@ export const authService: ServiceAuthType = {
 
     return user
   },
+  // Проверяем существует ли пользователь по коду востановления пароля
+  async checkExistsRecoveryCode(recoveryCode) {
+    const user = await userRepository.findByRecoveryCode(recoveryCode)
+
+    if (!user) {
+      return null
+    }
+
+    return user
+  },  
   async createUserAuthTokens(userId, deviceid) {
     // Формируем access токен
     const accessToken = await jwtService.createAccessToken(userId)

@@ -46,6 +46,11 @@ export const userService: ServiceUserType = {
         expirationDate: new Date(),
         isConfirmed: true,
       },
+      passwordRecovery: {
+        recoveryCode: '',
+        expirationDate: new Date(),
+        isRecovered: true
+      },
       refreshToken: '',
     }
 

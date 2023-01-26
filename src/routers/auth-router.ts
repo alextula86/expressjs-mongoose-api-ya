@@ -12,6 +12,7 @@ import {
   existsUserByLoginOrEmail,
   existsUserByEmail,
   existsUserByConfirmationCode,
+  existsUserByRecoveryCode,
   сountRequestsMiddleware,
 } from '../middlewares'
 
@@ -20,8 +21,9 @@ import {
   AuthUserModel,
   AuthAccessTokenModel,
   CreateUserModel,
-  RegistrationConfirmationModel,
-  RegistrationEmailResendingModel,
+  AuthUserCodeModel,
+  AuthUserEmailModel,
+  AuthUserConfirmPasswordModel,
   UserViewModel,
   HTTPStatuses,
   ErrorsMessageType,
@@ -64,6 +66,19 @@ const middlewaresRegistrationEmailResending = [
   сountRequestsMiddleware,
   emailUserValidation,
   existsUserByEmail,
+]
+
+const middlewaresRecoveryCode = [
+  сountRequestsMiddleware,
+  emailUserValidation,
+  inputValidationMiddleware,
+]
+
+const middlewaresConfirmPasswordModel = [
+  сountRequestsMiddleware,
+  passwordUserValidation,
+  inputValidationMiddleware,
+  existsUserByRecoveryCode,
 ]
 
 authRouter
@@ -163,7 +178,7 @@ authRouter
     res.status(HTTPStatuses.NOCONTENT204).send()
   })
   // Подтверждение email по коду
-  .post('/registration-confirmation', middlewaresRegistrationConfirmation, async (req: RequestWithBody<RegistrationConfirmationModel>, res: Response<UserViewModel | ErrorsMessageType>) => {
+  .post('/registration-confirmation', middlewaresRegistrationConfirmation, async (req: RequestWithBody<AuthUserCodeModel>, res: Response<UserViewModel | ErrorsMessageType>) => {
     // Отправляем код подтверждения email
     const isConfirmed = await authService.confirmEmail(req.body.code)
 
@@ -176,7 +191,7 @@ authRouter
     res.status(HTTPStatuses.NOCONTENT204).send()
   })
   // Повторная отправка кода подтверждения email
-  .post('/registration-email-resending', middlewaresRegistrationEmailResending, async (req: RequestWithBody<RegistrationEmailResendingModel>, res: Response<UserViewModel | ErrorsMessageType>) => {
+  .post('/registration-email-resending', middlewaresRegistrationEmailResending, async (req: RequestWithBody<AuthUserEmailModel>, res: Response<UserViewModel | ErrorsMessageType>) => {
     // Повторно формируем код подтверждения email, обновляем код у пользователя и отправляем письмо
     const isResending = await authService.resendingCode(req.body.email)
 
@@ -188,5 +203,40 @@ authRouter
 
     // Если новый код подтверждения email сформирован, сохранен для пользователя и письмо отправлено,
     // возвращаем статус 204
+    res.status(HTTPStatuses.NOCONTENT204).send()
+  })
+  // Восстановление пароля с помощью подтверждения по электронной почте. 
+  .post('/password-recovery', middlewaresRecoveryCode, async (req: RequestWithBody<AuthUserEmailModel>, res: Response<UserViewModel | ErrorsMessageType>) => {
+    // Проверяем зарегистрирован ли пользователь в системе
+    const user = await authService.checkExistsUserByLoginOrEmail(req.body.email)
+    // Если пользователь не зарегестрирован, возвращаем статус 204 для предотвращения обнаружения электронной почты пользователя
+    if (!user) {
+      return res.status(HTTPStatuses.NOCONTENT204).send()
+    }
+    
+    // Формируем код востановления пароля, обновляем его у пользователя и отправляем письмо
+    const isPasswordRecovery = await authService.passwordRecoveryCode(req.body.email)
+
+    // Если код востановления пароля не сформирован или не сохранен для пользователя или письмо не отправлено,
+    // возвращаем статус 400
+    if (!isPasswordRecovery) {
+      return res.status(HTTPStatuses.BADREQUEST400).send()
+    }
+
+    // Если код востановления пароля сформирован, сохранен для пользователя и письмо отправлено,
+    // возвращаем статус 204
+    res.status(HTTPStatuses.NOCONTENT204).send()
+  })
+  // Подтверждение восстановление пароля
+  .post('/new-password', middlewaresConfirmPasswordModel, async (req: RequestWithBody<AuthUserConfirmPasswordModel>, res: Response<UserViewModel | ErrorsMessageType>) => {
+    // Обновляем пароль пользователя
+    const isUpdatedUserPassword = await authService.updatedUserPassword(req.body.newPassword, req.body.recoveryCode)
+
+    // Если пароль не обновился возвращаем статус 400
+    if (!isUpdatedUserPassword) {
+      return res.status(HTTPStatuses.BADREQUEST400).send()
+    }
+
+    // В случае успешного обновления пароля пользователя возвращаем статус 204
     res.status(HTTPStatuses.NOCONTENT204).send()
   })

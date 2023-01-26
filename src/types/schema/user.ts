@@ -27,9 +27,16 @@ type EmailConfirmationType = {
   isConfirmed: boolean
 }
 
+type PasswordRecoveryType = {
+  recoveryCode: string
+  expirationDate: Date
+  isRecovered: boolean
+}
+
 export type UserType = {
   id: string
   accountData: UserDataType
   emailConfirmation: EmailConfirmationType
+  passwordRecovery: PasswordRecoveryType
   refreshToken: string
 }

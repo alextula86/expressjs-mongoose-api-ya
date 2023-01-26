@@ -1,5 +1,6 @@
 import { NextFunction, Response } from 'express'
 import { authService } from '../services/auth-service'
+import { HTTPStatuses } from '../types'
 import { usersErrorsValidator } from '../errors'
 
 import { RequestWithBody, RegistrationAuthService, ErrorsMessageType } from '../types'
@@ -13,13 +14,13 @@ export const existsUserByLoginOrEmail = async (req: RequestWithBody<Registration
   // Если пользователь по логину найден,
   // Возвращаем статус 400 и сообщение об ошибке
   if (userByLogin) {
-    return res.status(400).send({ errorsMessages: [usersErrorsValidator.loginError] })
+    return res.status(HTTPStatuses.BADREQUEST400).send({ errorsMessages: [usersErrorsValidator.loginError] })
   }
 
   // Если пользователь по email найден,
   // Возвращаем статус 400 и сообщение об ошибке
   if (userByEmail) {
-    return res.status(400).send({ errorsMessages: [usersErrorsValidator.emailError] })
+    return res.status(HTTPStatuses.BADREQUEST400).send({ errorsMessages: [usersErrorsValidator.emailError] })
   }
 
   next()

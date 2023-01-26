@@ -11,10 +11,15 @@ export type AuthAccessTokenModel = {
   accessToken: string
 }
 
-export type RegistrationConfirmationModel = {
+export type AuthUserCodeModel = {
   code: string,
 }
 
-export type RegistrationEmailResendingModel = {
+export type AuthUserEmailModel = {
   email: string,
+}
+
+export type AuthUserConfirmPasswordModel = {
+  newPassword: string,
+  recoveryCode: string,
 }
