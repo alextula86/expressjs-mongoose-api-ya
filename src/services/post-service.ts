@@ -1,17 +1,26 @@
 import { trim } from 'lodash'
-import { postRepository } from '../repositories/post/post-db-repository'
-import { getNextStrId } from '../utils'
-import { PostType, SortDirection, ServicePostType } from '../types'
+import { PostRepository } from '../repositories/post/post-db-repository'
 
-export const postService: ServicePostType = {
+import {
+  PostType,
+  PostViewModel,
+  QueryPostModel,
+  UpdatePostService,
+  CreaetPostService,
+  ResponseViewModelDetail,
+  SortDirection,
+} from '../types'
+
+export class PostService {
+  constructor(protected postRepository: PostRepository){}
   async findAllPosts({
     searchNameTerm,
     pageNumber,
     pageSize,
     sortBy = 'createdAt',
     sortDirection =  SortDirection.DESC,
-  }) {
-    const foundAllPosts = await postRepository.findAllPosts({
+  }: QueryPostModel): Promise<ResponseViewModelDetail<PostViewModel>> {
+    const foundAllPosts = await this.postRepository.findAllPosts({
       searchNameTerm,
       pageNumber,
       pageSize,
@@ -20,28 +29,37 @@ export const postService: ServicePostType = {
     })
 
     return foundAllPosts
-  },
-  async findPostById(id) {
-    const foundPostById = await postRepository.findPostById(id)
+  }
+  async findPostById(id: string): Promise<PostViewModel | null> {
+    const foundPostById = await this.postRepository.findPostById(id)
 
     return foundPostById
-  },
-  async createdPost({ title, shortDescription, content, blogId, blogName }) {
-    const newPost: PostType = {
-      id: getNextStrId(),
-      title: trim(String(title)),
-      shortDescription: trim(String(shortDescription)),
-      content: trim(String(content)),
-      blogId,
-      blogName,
-      createdAt: new Date().toISOString(),
-    }
+  }
+  async createdPost({
+    title,
+    shortDescription,
+    content,
+    blogId,
+    blogName,
+  }: CreaetPostService): Promise<PostViewModel> {
+    const postTitle = trim(String(title))
+    const postShortDescription = trim(String(shortDescription))
+    const postContent = trim(String(content))
+    
+    const newPost = new PostType(postTitle, postShortDescription, postContent, blogId, blogName)
 
-    const createdPost = await postRepository.createdPost(newPost)
+    const createdPost = await this.postRepository.createdPost(newPost)
 
     return createdPost
-  },
-  async updatePost({ id, title, shortDescription, content, blogId, blogName }) {
+  }
+  async updatePost({
+    id,
+    title,
+    shortDescription,
+    content,
+    blogId,
+    blogName,
+  }: UpdatePostService): Promise<boolean> {
     const updatedPost: PostType = {
       id,
       title: trim(String(title)),
@@ -51,13 +69,13 @@ export const postService: ServicePostType = {
       blogName,
     }
 
-    const isUpdatedPost = await postRepository.updatePost(updatedPost)
+    const isUpdatedPost = await this.postRepository.updatePost(updatedPost)
 
     return isUpdatedPost
-  },
-  async deletePostById(id) {
-    const isDeletePostById = await postRepository.deletePostById(id)
+  }
+  async deletePostById(id: string): Promise<boolean> {
+    const isDeletePostById = await this.postRepository.deletePostById(id)
 
     return isDeletePostById
-  },
+  }
 }

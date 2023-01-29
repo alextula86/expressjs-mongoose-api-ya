@@ -1,5 +1,5 @@
 import { trim } from 'lodash'
-import { blogRepository } from '../repositories/blog/blog-db-repository'
+import { BlogRepository } from '../repositories/blog/blog-db-repository'
 import { getNextStrId } from '../utils'
 
 import {
@@ -16,7 +16,8 @@ import {
   SortDirection,
 } from '../types'
 
-class BlogService {
+export class BlogService {
+  constructor(protected blogRepository: BlogRepository) {}
   async findAllBlogs({
     searchNameTerm,
     pageNumber,
@@ -24,7 +25,7 @@ class BlogService {
     sortBy = 'createdAt',
     sortDirection =  SortDirection.DESC,
   }: QueryBlogModel): Promise<ResponseViewModelDetail<BlogViewModel>> {
-    const foundAllBlogs = await blogRepository.findAllBlogs({
+    const foundAllBlogs = await this.blogRepository.findAllBlogs({
       searchNameTerm,
       pageNumber,
       pageSize,
@@ -34,13 +35,11 @@ class BlogService {
 
     return foundAllBlogs
   }
-
   async findBlogById(id: string): Promise<BlogViewModel | null> {
-    const foundBlogById = await blogRepository.findBlogById(id)
+    const foundBlogById = await this.blogRepository.findBlogById(id)
 
     return foundBlogById
   }
-
   async findPostsByBlogId(blogId: string, {
     searchNameTerm,
     pageNumber,
@@ -48,7 +47,7 @@ class BlogService {
     sortBy = 'createdAt',
     sortDirection =  SortDirection.DESC,
   }: QueryPostModel): Promise<ResponseViewModelDetail<PostViewModel>> {
-    const foundPostsByBlogId = await blogRepository.findPostsByBlogId(blogId, {
+    const foundPostsByBlogId = await this.blogRepository.findPostsByBlogId(blogId, {
       searchNameTerm,
       pageNumber,
       pageSize,
@@ -57,7 +56,6 @@ class BlogService {
     })
     return foundPostsByBlogId
   }
-
   async createdBlog({
     name, 
     description, 
@@ -68,11 +66,10 @@ class BlogService {
     const blogWebsiteUrl = trim(String(websiteUrl))
     
     const newBlog = new BlogType(blogName, blogDescription, blogWebsiteUrl)
-    const createdBlog = await blogRepository.createdBlog(newBlog)
+    const createdBlog = await this.blogRepository.createdBlog(newBlog)
 
     return createdBlog
   }
-
   async createdPostByBlogId({
     title,
     shortDescription,
@@ -80,21 +77,15 @@ class BlogService {
     blogId,
     blogName,
   }: CreaetPostService): Promise<PostViewModel> {
-    const newPost: PostType = {
-      id: getNextStrId(),
-      title: trim(String(title)),
-      shortDescription: trim(String(shortDescription)),
-      content: trim(String(content)),
-      blogId,
-      blogName,
-      createdAt: new Date().toISOString(),
-    }
+    const postTitle = trim(String(title))
+    const postShortDescription = trim(String(shortDescription))
+    const postContent = trim(String(content))
 
-    const createdPost = await blogRepository.createdPostByBlogId(newPost)
+    const newPost = new PostType(postTitle, postShortDescription, postContent, blogId, blogName)
+    const createdPost = await this.blogRepository.createdPostByBlogId(newPost)
 
     return createdPost
   }
-
   async updateBlog({
     id,
     name,
@@ -108,16 +99,13 @@ class BlogService {
       websiteUrl: trim(String(websiteUrl)),
     }
 
-    const isUpdatedBlog = await blogRepository.updateBlog(updatedBlog)
+    const isUpdatedBlog = await this.blogRepository.updateBlog(updatedBlog)
 
     return isUpdatedBlog
   }
-
   async deleteBlogById(id: string):  Promise<boolean> {
-    const isDeleteBlogById = await blogRepository.deleteBlogById(id)
+    const isDeleteBlogById = await this.blogRepository.deleteBlogById(id)
 
     return isDeleteBlogById
   }
 }
-
-export const blogService = new BlogService()

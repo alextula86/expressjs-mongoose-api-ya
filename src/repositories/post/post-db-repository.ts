@@ -1,14 +1,21 @@
 import { postCollection } from '../../repositories/db'
-import { RepositoryPostType, PostType, SortDirection } from '../../types'
 
-export const postRepository: RepositoryPostType = {
+import {
+  PostType,
+  PostViewModel,
+  QueryPostModel,
+  ResponseViewModelDetail,
+  SortDirection,
+} from '../../types'
+
+export class PostRepository {
   async findAllPosts({
     searchNameTerm,
     pageNumber,
     pageSize,
     sortBy,
     sortDirection,
-  }) {
+  }: QueryPostModel): Promise<ResponseViewModelDetail<PostViewModel>> {
     const number = pageNumber ? Number(pageNumber) : 1
     const size = pageSize ? Number(pageSize) : 10
 
@@ -37,8 +44,8 @@ export const postRepository: RepositoryPostType = {
       page: number,
       pageSize: size,
     })
-  },
-  async findPostById(id) {
+  }
+  async findPostById(id: string): Promise<PostViewModel | null> {
     const foundPost: PostType | null = await postCollection.findOne({ id })
 
     if (!foundPost) {
@@ -46,13 +53,20 @@ export const postRepository: RepositoryPostType = {
     }
 
     return this._getPostViewModel(foundPost)
-  },
-  async createdPost(createdPost) {
+  }
+  async createdPost(createdPost: PostType): Promise<PostViewModel> {
     await postCollection.insertOne(createdPost)
 
     return this._getPostViewModel(createdPost)
-  },
-  async updatePost({ id, title, shortDescription, content, blogId, blogName }) {
+  }
+  async updatePost({
+    id,
+    title,
+    shortDescription,
+    content,
+    blogId,
+    blogName,
+  }: PostType): Promise<boolean> {
     const { matchedCount } = await postCollection.updateOne({ id }, {
       $set: {
         title,
@@ -64,13 +78,13 @@ export const postRepository: RepositoryPostType = {
     })
 
     return matchedCount === 1   
-  },
-  async deletePostById(id) {
+  }
+  async deletePostById(id: string): Promise<boolean> {
     const { deletedCount } = await postCollection.deleteOne({ id })
 
     return deletedCount === 1
-  },
-  _getPostViewModel(dbPost) {
+  }
+  _getPostViewModel(dbPost: PostType): PostViewModel {
     return {
       id: dbPost.id,
       title: dbPost.title,
@@ -80,8 +94,14 @@ export const postRepository: RepositoryPostType = {
       blogName: dbPost.blogName,
       createdAt: dbPost.createdAt,
     }
-  },
-  _getPostsViewModelDetail({ items, totalCount, pagesCount, page, pageSize }) {
+  }
+  _getPostsViewModelDetail({
+    items,
+    totalCount,
+    pagesCount,
+    page,
+    pageSize,
+  }: ResponseViewModelDetail<PostType>): ResponseViewModelDetail<PostViewModel> {
     return {
       pagesCount,
       page,
@@ -97,5 +117,5 @@ export const postRepository: RepositoryPostType = {
         createdAt: item.createdAt,
       })),
     }
-  },
+  }
 }

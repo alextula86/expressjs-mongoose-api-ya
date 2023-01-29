@@ -1,16 +1,25 @@
 import { trim } from 'lodash'
-import { commentRepository } from '../repositories/comment/comment-db-repository'
-import { getNextStrId } from '../utils'
-import { CommentType, SortDirection, ServiceCommentType } from '../types'
+import { CommentRepository } from '../repositories/comment/comment-db-repository'
 
-export const commentService: ServiceCommentType = {
+import {
+  CommentType,
+  CommentViewModel,
+  QueryCommentModel,
+  CreateCommentService,
+  UpdateCommentService,
+  ResponseViewModelDetail,
+  SortDirection,
+ } from '../types'
+
+export class CommentService {
+  constructor(protected commentRepository: CommentRepository) {}
   async findAllCommentsByPostId(postId: string, {
     pageNumber,
     pageSize,
     sortBy = 'createdAt',
     sortDirection = SortDirection.DESC,
-  }) {
-    const foundAllComments = await commentRepository.findAllCommentsByPostId(postId, {
+  }: QueryCommentModel): Promise<ResponseViewModelDetail<CommentViewModel>> {
+    const foundAllComments = await this.commentRepository.findAllCommentsByPostId(postId, {
       pageNumber,
       pageSize,
       sortBy,
@@ -18,39 +27,41 @@ export const commentService: ServiceCommentType = {
     })
 
     return foundAllComments
-  },  
-  async findCommentById(id: string) {
-    const foundCommentById = await commentRepository.findCommentById(id)
+  }
+  async findCommentById(id: string): Promise<CommentViewModel | null> {
+    const foundCommentById = await this.commentRepository.findCommentById(id)
 
     return foundCommentById
-  },
-  async createdComment({ content, postId, userId, userLogin }) {
-    const newComment: CommentType = {
-      id: getNextStrId(),
-      content: trim(String(content)),
-      postId,
-      userId,
-      userLogin,  
-      createdAt: new Date().toISOString(),
-    }
-
-    const createdComment = await commentRepository.createdComment(newComment)
+  }
+  async createdComment({
+    content,
+    postId,
+    userId,
+    userLogin,
+  }: CreateCommentService): Promise<CommentViewModel> {
+    const commentContent = trim(String(content))
+    
+    const newComment = new CommentType(commentContent, postId, userId, userLogin)
+    const createdComment = await this.commentRepository.createdComment(newComment)
 
     return createdComment
-  },  
-  async updateComment({ id, content }) {
+  }
+  async updateComment({
+    id,
+    content,
+  }: UpdateCommentService): Promise<boolean> {
     const updatedComment = {
       id,
       content: trim(String(content)),
     }
 
-    const isUpdatedComment = await commentRepository.updateComment(updatedComment)
+    const isUpdatedComment = await this.commentRepository.updateComment(updatedComment)
 
     return isUpdatedComment
-  },
-  async deleteCommentById(id) {
-    const isDeleteCommentById = await commentRepository.deleteCommentById(id)
+  }
+  async deleteCommentById(id: string): Promise<boolean> {
+    const isDeleteCommentById = await this.commentRepository.deleteCommentById(id)
 
     return isDeleteCommentById
-  },
+  }
 }

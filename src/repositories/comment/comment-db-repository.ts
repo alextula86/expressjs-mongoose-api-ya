@@ -1,13 +1,20 @@
 import { commentCollection } from '../db'
-import { RepositoryCommentType, CommentType, SortDirection } from '../../types'
 
-export const commentRepository: RepositoryCommentType = {
-  async findAllCommentsByPostId(postId, {
+import {
+  CommentType,
+  CommentViewModel,
+  QueryCommentModel,
+  UpdateCommentService,
+  
+  ResponseViewModelDetail, SortDirection } from '../../types'
+
+export class CommentRepository {
+  async findAllCommentsByPostId(postId: string, {
     pageNumber,
     pageSize,
     sortBy,
     sortDirection,
-  }) {
+  }: QueryCommentModel): Promise<ResponseViewModelDetail<CommentViewModel>> {
     const number = pageNumber ? Number(pageNumber) : 1
     const size = pageSize ? Number(pageSize) : 10
     
@@ -32,8 +39,8 @@ export const commentRepository: RepositoryCommentType = {
       page: number,
       pageSize: size,
     })
-  },
-  async findCommentById(id) {
+  }
+  async findCommentById(id: string): Promise<CommentViewModel | null> {
     const foundComment: CommentType | null = await commentCollection.findOne({ id })
 
     if (!foundComment) {
@@ -41,25 +48,25 @@ export const commentRepository: RepositoryCommentType = {
     }
 
     return this._getCommentViewModel(foundComment)
-  },
-  async createdComment(createdComment) {
+  }
+  async createdComment(createdComment: CommentType): Promise<CommentViewModel> {
     await commentCollection.insertOne(createdComment)
 
     return this._getCommentViewModel(createdComment)
-  },  
-  async updateComment({id, content }) {
+  }
+  async updateComment({id, content }: UpdateCommentService): Promise<boolean> {
     const { matchedCount } = await commentCollection.updateOne({ id }, {
       $set: { content }
     })
 
     return matchedCount === 1
-  },
-  async deleteCommentById(id) {
+  }
+  async deleteCommentById(id: string): Promise<boolean> {
     const { deletedCount } = await commentCollection.deleteOne({ id })
 
     return deletedCount === 1
-  },
-  _getCommentViewModel(dbComments) {
+  }
+  _getCommentViewModel(dbComments: CommentType): CommentViewModel {
     return {
       id: dbComments.id,
       content: dbComments.content,
@@ -67,8 +74,14 @@ export const commentRepository: RepositoryCommentType = {
       userLogin: dbComments.userLogin,
       createdAt: dbComments.createdAt,
     }
-  },
-  _getCommentsViewModelDetail({ items, totalCount, pagesCount, page, pageSize }) {
+  }
+  _getCommentsViewModelDetail({
+    items,
+    totalCount,
+    pagesCount,
+    page,
+    pageSize,
+  }: ResponseViewModelDetail<CommentType>): ResponseViewModelDetail<CommentViewModel> {
     return {
       pagesCount,
       page,
@@ -82,5 +95,5 @@ export const commentRepository: RepositoryCommentType = {
         createdAt: item.createdAt,
       })),
     }
-  },
+  }
 }

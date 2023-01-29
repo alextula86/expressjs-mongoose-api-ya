@@ -7,12 +7,11 @@ import {
   PostViewModel,
   QueryBlogModel,
   QueryPostModel,
-  // UpdateBlogService,
   ResponseViewModelDetail,
   SortDirection,
 } from '../../types'
 
-class BlogRepository {
+export class BlogRepository {
   async findAllBlogs({
     searchNameTerm,
     pageNumber,
@@ -49,7 +48,6 @@ class BlogRepository {
       pageSize: size,
     })
   }
-
   async findBlogById(id: string): Promise<BlogViewModel | null> {
     const foundBlog: BlogType | null = await blogCollection.findOne({ id })
 
@@ -59,7 +57,6 @@ class BlogRepository {
 
     return this._getBlogViewModel(foundBlog)
   }
-
   async findPostsByBlogId(blogId: string, {
     searchNameTerm,
     pageNumber,
@@ -96,19 +93,16 @@ class BlogRepository {
       pageSize: size,
     })
   }
-
   async createdBlog(createdBlog: BlogType): Promise<BlogViewModel> {
     await blogCollection.insertOne(createdBlog)
 
     return this._getBlogViewModel(createdBlog)
   }
-
   async createdPostByBlogId(createdPost: PostType): Promise<PostViewModel> {
     await postCollection.insertOne(createdPost)
 
     return this._getPostViewModel(createdPost)
   }
-
   async updateBlog({id, name, description, websiteUrl }: BlogType): Promise<boolean> {
     const { matchedCount } = await blogCollection.updateOne({ id }, {
       $set: {
@@ -120,13 +114,11 @@ class BlogRepository {
 
     return matchedCount === 1
   }
-
   async deleteBlogById(id: string): Promise<boolean> {
     const { deletedCount } = await blogCollection.deleteOne({ id })
 
     return deletedCount === 1
   }
-
   _getBlogViewModel(dbBlog: BlogType): BlogViewModel {
     return {
       id: dbBlog.id,
@@ -136,7 +128,6 @@ class BlogRepository {
       createdAt: dbBlog.createdAt,
     }
   }
-
   _getPostViewModel(dbPost: PostType): PostViewModel {
     return {
       id: dbPost.id,
@@ -148,7 +139,6 @@ class BlogRepository {
       createdAt: dbPost.createdAt,
     }
   }
-
   _getBlogsViewModelDetail({
     items,
     totalCount,
@@ -170,7 +160,6 @@ class BlogRepository {
       })),
     }
   }
-
   _getPostsViewModelDetail({
     items,
     totalCount,
@@ -195,5 +184,3 @@ class BlogRepository {
     }
   }
 }
-
-export const blogRepository = new BlogRepository()
