@@ -1,8 +1,10 @@
-export type DeviceType = {
-  id: string
-  ip: string
-  title: string
-  lastActiveDate: string
-  userId: string
-  active: boolean
+export class DeviceType {
+  constructor(
+    public id: string,
+    public ip: string,
+    public title: string,
+    public lastActiveDate: string,
+    public userId: string,
+    public active: boolean,
+  ){}
 }

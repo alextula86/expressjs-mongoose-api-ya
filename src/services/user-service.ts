@@ -1,10 +1,20 @@
 import { trim } from 'lodash'
 import bcrypt from 'bcrypt'
-import { userRepository } from '../repositories/user/user-db-repository'
-import { getNextStrId, generateUUID } from '../utils'
-import { UserType, SortDirection, ServiceUserType } from '../types'
+import { UserRepository } from '../repositories/user/user-db-repository'
+import { generateUUID } from '../utils'
 
-export const userService: ServiceUserType = {
+import {
+  UserType,
+  UserViewModel,
+  UserAuthViewModel,
+  QueryUserModel,
+  CreaetUserService,
+  ResponseViewModelDetail,
+  SortDirection,
+} from '../types'
+
+export class UserService {
+  constructor(protected userRepository: UserRepository) {}
   async findAllUsers({
     searchLoginTerm,
     searchEmailTerm,
@@ -12,8 +22,8 @@ export const userService: ServiceUserType = {
     pageSize,
     sortBy = 'createdAt',
     sortDirection =  SortDirection.DESC,
-  }) {
-    const foundAllUsers = await userRepository.findAllUsers({
+  }: QueryUserModel): Promise<ResponseViewModelDetail<UserViewModel>> {
+    const foundAllUsers = await this.userRepository.findAllUsers({
       searchLoginTerm,
       searchEmailTerm,
       pageNumber,
@@ -23,48 +33,49 @@ export const userService: ServiceUserType = {
     })
 
     return foundAllUsers
-  },
-  async findUserById(id) {
-    const foundUserById = await userRepository.findUserById(id)
+  }
+  async findUserById(id: string): Promise<UserAuthViewModel | null> {
+    const foundUserById = await this.userRepository.findUserById(id)
 
     return foundUserById
-  },
-  async createdUser({ login, password, email }) {
+  }
+  async createdUser({ login, password, email }: CreaetUserService): Promise<UserViewModel> {
     const passwordSalt = await bcrypt.genSaltSync(10)
     const passwordHash = await this._generateHash(password, passwordSalt)
     
-    const newUser: UserType = {
-      id: getNextStrId(),
-      accountData: {
-        login: trim(String(login)),
-        email: trim(String(email)),
-        passwordHash,
-        createdAt: new Date().toISOString(),
-      },
-      emailConfirmation: {
-        confirmationCode: generateUUID(),
-        expirationDate: new Date(),
-        isConfirmed: true,
-      },
-      passwordRecovery: {
-        recoveryCode: '',
-        expirationDate: new Date(),
-        isRecovered: true
-      },
-      refreshToken: '',
+    const accountData = {
+      login: trim(String(login)),
+      email: trim(String(email)),
+      passwordHash,
+      createdAt: new Date().toISOString(),
     }
 
-    const createdUser = await userRepository.createdUser(newUser)
+    const emailConfirmation = {
+      confirmationCode: generateUUID(),
+      expirationDate: new Date(),
+      isConfirmed: true,
+    }
+
+    const passwordRecovery = {
+      recoveryCode: '',
+      expirationDate: new Date(),
+      isRecovered: true
+    }
+
+    const refreshToken = ''
+
+    const newUser = new UserType(accountData, emailConfirmation, passwordRecovery, refreshToken)
+    const createdUser = await this.userRepository.createdUser(newUser)
 
     return createdUser
-  },
-  async deleteUserById(id) {
-    const isDeleteUserById = await userRepository.deleteUserById(id)
+  }
+  async deleteUserById(id: string): Promise<boolean> {
+    const isDeleteUserById = await this.userRepository.deleteUserById(id)
 
     return isDeleteUserById
-  },
-  async checkCredentials(loginOrEmail, password) {
-    const user = await userRepository.findByLoginOrEmail(loginOrEmail)
+  }
+  async checkCredentials(loginOrEmail: string, password: string): Promise<UserType | null> {
+    const user = await this.userRepository.findByLoginOrEmail(loginOrEmail)
 
     if (!user) {
       return null
@@ -78,8 +89,8 @@ export const userService: ServiceUserType = {
     }
 
     return user
-  },
-  async _generateHash(password, salt) {
+  }
+  async _generateHash(password: string, salt: string): Promise<string> {
     const hash = await bcrypt.hash(password, salt)
     return hash
   }

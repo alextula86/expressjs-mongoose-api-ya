@@ -1,11 +1,16 @@
 import { NextFunction, Response } from 'express'
-import { authService } from '../services/auth-service'
+import { UserRepository } from '../repositories/user/user-db-repository'
+import { AuthService, UserService } from '../services'
 import { HTTPStatuses } from '../types'
 import { usersErrorsValidator } from '../errors'
 
 import { RequestWithBody, RegistrationAuthService, ErrorsMessageType } from '../types'
 
 export const existsUserByLoginOrEmail = async (req: RequestWithBody<RegistrationAuthService>, res: Response<ErrorsMessageType>, next: NextFunction) => {
+  const userRepository = new UserRepository()
+  const userService = new UserService(userRepository)
+  const authService = new AuthService(userRepository, userService)
+
   // Ищем пользователя по логину
   const userByLogin = await authService.checkExistsUserByLoginOrEmail(req.body.login)
   // Ищем пользователя по email

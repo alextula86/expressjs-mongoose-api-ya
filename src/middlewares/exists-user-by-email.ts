@@ -1,10 +1,15 @@
 import { NextFunction, Response } from 'express'
-import { authService } from '../services/auth-service'
+import { UserRepository } from '../repositories/user/user-db-repository'
+import { AuthService, UserService } from '../services'
 import { usersErrorsValidator } from '../errors'
 
 import { RequestWithBody, EmailAuthService, ErrorsMessageType } from '../types'
 
 export const existsUserByEmail = async (req: RequestWithBody<EmailAuthService>, res: Response<ErrorsMessageType>, next: NextFunction) => {
+  const userRepository = new UserRepository()
+  const userService = new UserService(userRepository)
+  const authService = new AuthService(userRepository, userService)
+
   // Ищем пользователя по email
   const user = await authService.checkExistsUserByEmail(req.body.email)
 

@@ -1,8 +1,16 @@
 import { isEmpty } from 'lodash'
 import { userCollection } from '../db'
-import { RepositoryUserType, SortDirection, UserType } from '../../types'
 
-export const userRepository: RepositoryUserType = {
+import {
+  UserType,
+  UserViewModel,
+  UserAuthViewModel,
+  QueryUserModel,
+  ResponseViewModelDetail,
+  SortDirection,
+} from '../../types'
+
+export class UserRepository {
   async findAllUsers({
     searchLoginTerm,
     searchEmailTerm,
@@ -10,7 +18,7 @@ export const userRepository: RepositoryUserType = {
     pageSize,
     sortBy,
     sortDirection,
-  }) {
+  }: QueryUserModel): Promise<ResponseViewModelDetail<UserViewModel>> {
     const number = pageNumber ? Number(pageNumber) : 1
     const size = pageSize ? Number(pageSize) : 10
 
@@ -45,8 +53,8 @@ export const userRepository: RepositoryUserType = {
       page: number,
       pageSize: size,
     })
-  },
-  async findUserById(id) {
+  }
+  async findUserById(id: string): Promise<UserAuthViewModel | null> {
     const foundUser: UserType | null = await userCollection.findOne({ id })
 
     if (!foundUser) {
@@ -54,8 +62,8 @@ export const userRepository: RepositoryUserType = {
     }
 
     return this._getUserAuthViewModel(foundUser)
-  },
-  async findRefreshTokenByUserId(userId) {
+  }
+  async findRefreshTokenByUserId(userId: string): Promise<{ refreshToken: string } | null> {
     const foundUser: UserType | null = await userCollection.findOne({ 'id': userId })
 
     if (!foundUser) {
@@ -63,8 +71,8 @@ export const userRepository: RepositoryUserType = {
     }
 
     return { refreshToken: foundUser.refreshToken }
-  },
-  async findByLoginOrEmail(loginOrEmail: string) {
+  }
+  async findByLoginOrEmail(loginOrEmail: string): Promise<UserType | null> {
     const foundUser: UserType | null = await userCollection.findOne({ $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }] })
 
     if (!foundUser) {
@@ -72,8 +80,8 @@ export const userRepository: RepositoryUserType = {
     }
 
     return foundUser
-  },
-  async findByConfirmationCode(code) {
+  }
+  async findByConfirmationCode(code: string): Promise<UserType | null> {
     const foundUser: UserType | null = await userCollection.findOne({ 'emailConfirmation.confirmationCode': code })
 
     if (!foundUser) {
@@ -81,8 +89,8 @@ export const userRepository: RepositoryUserType = {
     }
 
     return foundUser
-  },
-  async findByRecoveryCode(code) {
+  }
+  async findByRecoveryCode(code: string): Promise<UserType | null> {
     const foundUser: UserType | null = await userCollection.findOne({ 'passwordRecovery.recoveryCode': code })
 
     if (!foundUser) {
@@ -90,18 +98,18 @@ export const userRepository: RepositoryUserType = {
     }
 
     return foundUser
-  },
-  async createdUser(createdUser) {
+  }
+  async createdUser(createdUser: UserType): Promise<UserViewModel> {
     await userCollection.insertOne(createdUser)
 
     return this._getUserViewModel(createdUser)
-  },
-  async deleteUserById(id) {
+  }
+  async deleteUserById(id: string): Promise<boolean> {
     const { deletedCount } = await userCollection.deleteOne({ id })
 
     return deletedCount === 1
-  },
-  async updateConfirmationByCode(code) {
+  }
+  async updateConfirmationByCode(code: string): Promise<boolean> {
     const result = await userCollection.updateOne({ 'emailConfirmation.confirmationCode': code }, {
       $set: {
         'emailConfirmation.isConfirmed': true
@@ -109,8 +117,8 @@ export const userRepository: RepositoryUserType = {
     })
 
     return result.modifiedCount === 1
-  },
-  async updateConfirmationCodeByEmail(email, code) {
+  }
+  async updateConfirmationCodeByEmail(email: string, code: string): Promise<boolean> {
     const result = await userCollection.updateOne({ 'accountData.email': email }, {
       $set: {
         'emailConfirmation.confirmationCode': code
@@ -118,8 +126,8 @@ export const userRepository: RepositoryUserType = {
     })
 
     return result.modifiedCount === 1
-  },
-  async updateRecoveryCodeByEmail(email, recoveryCode, expirationDate) {
+  }
+  async updateRecoveryCodeByEmail(email: string, recoveryCode: string, expirationDate: Date): Promise<boolean> {
     const result = await userCollection.updateOne({ 'accountData.email': email }, {
       $set: {
         'passwordRecovery.recoveryCode': recoveryCode,
@@ -129,8 +137,8 @@ export const userRepository: RepositoryUserType = {
     })
 
     return result.modifiedCount === 1
-  },
-  async updatedUserPassword(passwordHash, recoveryCode) {
+  }
+  async updatedUserPassword(passwordHash: string, recoveryCode: string): Promise<boolean> {
     const result = await userCollection.updateOne({ 'passwordRecovery.recoveryCode': recoveryCode }, {
       $set: {
         'accountData.passwordHash': passwordHash,
@@ -139,8 +147,8 @@ export const userRepository: RepositoryUserType = {
     })
 
     return result.modifiedCount === 1
-  },
-  async updateRefreshTokenByUserId(userId, refreshToken) {
+  }
+  async updateRefreshTokenByUserId(userId: string, refreshToken: string): Promise<boolean> {
     const result = await userCollection.updateOne({ 'id': userId }, {
       $set: {
         refreshToken,
@@ -148,16 +156,22 @@ export const userRepository: RepositoryUserType = {
     })
 
     return result.modifiedCount === 1
-  },
-  _getUserViewModel(dbUser) {
+  }
+  _getUserViewModel(dbUser: UserType): UserViewModel {
     return {
       id: dbUser.id,
       login: dbUser.accountData.login,
       email: dbUser.accountData.email,
       createdAt: dbUser.accountData.createdAt,
     }
-  },
-  _getUsersViewModelDetail({ items, totalCount, pagesCount, page, pageSize }) {
+  }
+  _getUsersViewModelDetail({
+    items,
+    totalCount,
+    pagesCount,
+    page,
+    pageSize,
+  }: ResponseViewModelDetail<UserType>): ResponseViewModelDetail<UserViewModel> {
     return {
       pagesCount,
       page,
@@ -170,12 +184,12 @@ export const userRepository: RepositoryUserType = {
         createdAt: item.accountData.createdAt,
       })),
     }
-  },
-  _getUserAuthViewModel(dbUser) {
+  }
+  _getUserAuthViewModel(dbUser: UserType): UserAuthViewModel {
     return {
       userId: dbUser.id,
       login: dbUser.accountData.login,
       email: dbUser.accountData.email,
     }
-  },  
+  }
 }

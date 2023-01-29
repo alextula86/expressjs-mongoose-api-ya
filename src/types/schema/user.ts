@@ -1,18 +1,4 @@
-export type UserOldType = {
-  /** 
-  * id of existing user
-  * login of existing user
-  * email of existing user
-  * passwordHash of existing user
-  * createdAt of existing user    
-  */
-  id: string
-  login: string
-  email: string
-  passwordHash: string
-  // passwordSalt: string
-  createdAt: string
-}
+import { getNextStrId } from '../../utils'
 
 type UserDataType = {
   login: string
@@ -33,10 +19,14 @@ type PasswordRecoveryType = {
   isRecovered: boolean
 }
 
-export type UserType = {
+export class UserType {
   id: string
-  accountData: UserDataType
-  emailConfirmation: EmailConfirmationType
-  passwordRecovery: PasswordRecoveryType
-  refreshToken: string
+  constructor(
+    public accountData: UserDataType,
+    public emailConfirmation: EmailConfirmationType,
+    public passwordRecovery: PasswordRecoveryType,
+    public refreshToken: string,
+  ) {
+    this.id = getNextStrId()
+  }
 }

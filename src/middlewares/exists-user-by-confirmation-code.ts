@@ -1,11 +1,16 @@
 import { NextFunction, Response } from 'express'
-import { authService } from '../services/auth-service'
+import { UserRepository } from '../repositories/user/user-db-repository'
+import { AuthService, UserService } from '../services'
 import { usersErrorsValidator } from '../errors'
 import { HTTPStatuses } from '../types'
 
 import { RequestWithBody, ConfirmationCodeAuthService, ErrorsMessageType } from '../types'
 
 export const existsUserByConfirmationCode = async (req: RequestWithBody<ConfirmationCodeAuthService>, res: Response<ErrorsMessageType>, next: NextFunction) => {
+  const userRepository = new UserRepository()
+  const userService = new UserService(userRepository)
+  const authService = new AuthService(userRepository, userService)
+
   // Ищем пользователя по коду подтверждения email
   const user = await authService.checkExistsConfirmationCode(req.body.code)
 

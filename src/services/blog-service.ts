@@ -1,6 +1,5 @@
 import { trim } from 'lodash'
 import { BlogRepository } from '../repositories/blog/blog-db-repository'
-import { getNextStrId } from '../utils'
 
 import {
   BlogType,

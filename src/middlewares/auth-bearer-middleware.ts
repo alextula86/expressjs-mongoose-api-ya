@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
 import * as dotenv from 'dotenv'
 dotenv.config()
-import { userService } from '../services'
+import { UserService } from '../services'
+import { UserRepository } from '../repositories/user/user-db-repository'
 import { jwtService } from '../application'
 import { HTTPStatuses } from '../types'
 
@@ -17,6 +18,9 @@ export const authBearerMiddleware = async (req: Request & any, res: Response, ne
   if (authType !== 'Bearer' || !userId) {
     return res.status(HTTPStatuses.UNAUTHORIZED401).send()
   }
+
+  const userRepository = new UserRepository()
+  const userService = new UserService(userRepository)
 
   const user = await userService.findUserById(userId)
 

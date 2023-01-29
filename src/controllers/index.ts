@@ -1,3 +1,6 @@
 export * from './blogs-controller'
 export * from './posts-controller'
 export * from './comments-controller'
+export * from './user-controller'
+export * from './auth-controller'
+export * from './device-controller'

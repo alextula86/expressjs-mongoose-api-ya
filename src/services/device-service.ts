@@ -1,45 +1,46 @@
-import { deviceRepository } from '../repositories/device/device-db-repository'
-import { DeviceType, ServiceDeviceType } from '../types'
-import { getNextStrId } from '../utils'
+import { DeviceRepository } from '../repositories/device/device-db-repository'
+import { DeviceType, DeviceViewModel, CreaetDeviceService } from '../types'
 
-export const deviceService: ServiceDeviceType = {
-  async findAllDevices(userId) {
-    const foundAllDevices = await deviceRepository.findAllDevices(userId)
+export class DeviceService {
+  constructor(protected deviceRepository: DeviceRepository) {}
+
+  async findAllDevices(userId: string): Promise<DeviceViewModel[]> {
+    const foundAllDevices = await this.deviceRepository.findAllDevices(userId)
 
     return foundAllDevices
-  },
-  async findDeviceById(id) {
-    const foundDeviceById = await deviceRepository.findDeviceById(id)
+  }
+  async findDeviceById(id: string): Promise<DeviceType | null> {
+    const foundDeviceById = await this.deviceRepository.findDeviceById(id)
 
     return foundDeviceById
-  },  
-  async createdDevice({ id, ip, title, lastActiveDate, userId }) {
-    const newDevice: DeviceType = {
-      id,
-      ip,
-      title,
-      userId,
-      lastActiveDate,
-      active: true,
-    }
+  }
+  async createdDevice({
+    id,
+    ip,
+    title,
+    lastActiveDate,
+    userId,
+  }: CreaetDeviceService): Promise<DeviceType> {
+    const active = true
 
-    const createdDevice = await deviceRepository.createdDevice(newDevice)
+    const newDevice = new DeviceType(id, ip, title, lastActiveDate, userId, active)
+    const createdDevice = await this.deviceRepository.createdDevice(newDevice)
 
     return createdDevice
-  },
-  async deleteAllDevices(userId, currentDeviceId) {
-    const isDeleteAllDevices = await deviceRepository.deleteAllDevices(userId, currentDeviceId)
+  }
+  async deleteAllDevices(userId: string, currentDeviceId: string): Promise<boolean> {
+    const isDeleteAllDevices = await this.deviceRepository.deleteAllDevices(userId, currentDeviceId)
 
     return isDeleteAllDevices
-  },
-  async deleteDeviceById(id) {
-    const isDeletedDeviceById = await deviceRepository.deleteDeviceById(id)
+  }
+  async deleteDeviceById(id: string): Promise<boolean> {
+    const isDeletedDeviceById = await this.deviceRepository.deleteDeviceById(id)
 
     return isDeletedDeviceById
-  },
-  async updateLastActiveDateDevice(deviceId, lastActiveDate) {
-    const isUpdatedDevice = await deviceRepository.updateLastActiveDateDevice(deviceId, lastActiveDate)
+  }
+  async updateLastActiveDateDevice(deviceId: string, lastActiveDate: string): Promise<boolean> {
+    const isUpdatedDevice = await this.deviceRepository.updateLastActiveDateDevice(deviceId, lastActiveDate)
 
     return isUpdatedDevice
-  },
+  }
 }
