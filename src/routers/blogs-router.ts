@@ -49,8 +49,8 @@ const middlewaresPost = [
   inputValidationMiddleware
 ]
 
-blogsRouter
-  .get('/', async (req: RequestWithQuery<QueryBlogModel>, res: Response<ResponseViewModelDetail<BlogViewModel>>) => {
+class BlogsController {
+  async getBlogs(req: RequestWithQuery<QueryBlogModel>, res: Response<ResponseViewModelDetail<BlogViewModel>>) {
     const allBlogs = await blogService.findAllBlogs({
       searchNameTerm: req.query.searchNameTerm,
       pageNumber: req.query.pageNumber, 
@@ -60,8 +60,8 @@ blogsRouter
     })
 
     res.status(HTTPStatuses.SUCCESS200).send(allBlogs)
-  })
-  .get('/:id', async (req: RequestWithParams<URIParamsBlogModel>, res: Response<BlogViewModel>) => {
+  }
+  async getBlog(req: RequestWithParams<URIParamsBlogModel>, res: Response<BlogViewModel>) {
     const blogById = await blogService.findBlogById(req.params.id)
 
     if (!blogById) {
@@ -69,8 +69,8 @@ blogsRouter
     }
 
     res.status(HTTPStatuses.SUCCESS200).send(blogById)
-  })
-  .get('/:blogId/posts', async (req: RequestWithParamsAndQuery<URIParamsPostsByBlogId, QueryPostModel>, res: Response<ResponseViewModelDetail<PostViewModel>>) => {
+  }
+  async getPostsByBlogId(req: RequestWithParamsAndQuery<URIParamsPostsByBlogId, QueryPostModel>, res: Response<ResponseViewModelDetail<PostViewModel>>) {
     const blogById = await blogService.findBlogById(req.params.blogId)
 
     if (!blogById) {
@@ -86,8 +86,8 @@ blogsRouter
     })
 
     res.status(HTTPStatuses.SUCCESS200).send(postsByBlogId)
-  })
-  .post('/', middlewares, async (req: RequestWithBody<CreateBlogModel>, res: Response<BlogViewModel | ErrorsMessageType>) => {
+  }
+  async createBlog(req: RequestWithBody<CreateBlogModel>, res: Response<BlogViewModel | ErrorsMessageType>) {
     const createdBlog = await blogService.createdBlog({
       name: req.body.name,
       description: req.body.description,
@@ -95,8 +95,8 @@ blogsRouter
     })
 
     res.status(HTTPStatuses.CREATED201).send(createdBlog)
-  })
-  .post('/:blogId/posts', middlewaresPost, async (req: RequestWithParamsAndBody<URIParamsPostsByBlogId, CreatePostForBlogModel>, res: Response<PostViewModel | ErrorsMessageType>) => {
+  }
+  async createPostByBlogId(req: RequestWithParamsAndBody<URIParamsPostsByBlogId, CreatePostForBlogModel>, res: Response<PostViewModel | ErrorsMessageType>) {
     const blogById = await blogService.findBlogById(req.params.blogId)
 
     if (!blogById) {
@@ -112,8 +112,8 @@ blogsRouter
     })
 
     res.status(HTTPStatuses.CREATED201).send(createdPostByBlogId)
-  })  
-  .put('/:id', middlewares, async (req: RequestWithParamsAndBody<URIParamsBlogModel, UpdateBlogModel>, res: Response<boolean>) => {
+  }
+  async updateBlog(req: RequestWithParamsAndBody<URIParamsBlogModel, UpdateBlogModel>, res: Response<boolean>) {
     const blogById = await blogService.findBlogById(req.params.id)
 
     if (!blogById) {
@@ -132,8 +132,8 @@ blogsRouter
     }
 
     res.status(HTTPStatuses.NOCONTENT204).send()
-  })
-  .delete('/:id', authBasicMiddleware, async (req: RequestWithParams<URIParamsBlogModel>, res: Response<boolean>) => {
+  }
+  async deleteBlog(req: RequestWithParams<URIParamsBlogModel>, res: Response<boolean>) {
     const isBlogDeleted = await blogService.deleteBlogById(req.params.id)
 
     if (!isBlogDeleted) {
@@ -141,4 +141,16 @@ blogsRouter
     }
     
     res.status(HTTPStatuses.NOCONTENT204).send()
-  })
+  }
+}
+
+const blogsController = new BlogsController()
+
+blogsRouter
+  .get('/', blogsController.getBlogs)
+  .get('/:id', blogsController.getBlog)
+  .get('/:blogId/posts', blogsController.getPostsByBlogId)
+  .post('/', middlewares, blogsController.createBlog)
+  .post('/:blogId/posts', middlewaresPost, blogsController.createPostByBlogId)  
+  .put('/:id', middlewares, blogsController.updateBlog)
+  .delete('/:id', authBasicMiddleware, blogsController.deleteBlog)

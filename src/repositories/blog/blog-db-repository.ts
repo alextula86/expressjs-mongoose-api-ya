@@ -1,14 +1,25 @@
 import { blogCollection, postCollection } from '../../repositories/db'
-import { RepositoryBlogType, BlogType, PostType, SortDirection  } from '../../types'
 
-export const blogRepository: RepositoryBlogType = {
+import {
+  BlogType,
+  PostType,
+  BlogViewModel,
+  PostViewModel,
+  QueryBlogModel,
+  QueryPostModel,
+  // UpdateBlogService,
+  ResponseViewModelDetail,
+  SortDirection,
+} from '../../types'
+
+class BlogRepository {
   async findAllBlogs({
     searchNameTerm,
     pageNumber,
     pageSize,
     sortBy,
     sortDirection,
-  }) {
+  }: QueryBlogModel): Promise<ResponseViewModelDetail<BlogViewModel>> {
     const number = pageNumber ? Number(pageNumber) : 1
     const size = pageSize ? Number(pageSize) : 10
     
@@ -37,8 +48,9 @@ export const blogRepository: RepositoryBlogType = {
       page: number,
       pageSize: size,
     })
-  },
-  async findBlogById(id) {
+  }
+
+  async findBlogById(id: string): Promise<BlogViewModel | null> {
     const foundBlog: BlogType | null = await blogCollection.findOne({ id })
 
     if (!foundBlog) {
@@ -46,14 +58,15 @@ export const blogRepository: RepositoryBlogType = {
     }
 
     return this._getBlogViewModel(foundBlog)
-  },
-  async findPostsByBlogId(blogId, {
+  }
+
+  async findPostsByBlogId(blogId: string, {
     searchNameTerm,
     pageNumber,
     pageSize,
     sortBy,
     sortDirection,
-  }) {
+  }: QueryPostModel): Promise<ResponseViewModelDetail<PostViewModel>> {
     const number = pageNumber ? Number(pageNumber) : 1
     const size = pageSize ? Number(pageSize) : 10
 
@@ -82,18 +95,21 @@ export const blogRepository: RepositoryBlogType = {
       page: number,
       pageSize: size,
     })
-  },
-  async createdBlog(createdBlog) {
+  }
+
+  async createdBlog(createdBlog: BlogType): Promise<BlogViewModel> {
     await blogCollection.insertOne(createdBlog)
 
     return this._getBlogViewModel(createdBlog)
-  },
-  async createdPostByBlogId(createdPost) {
+  }
+
+  async createdPostByBlogId(createdPost: PostType): Promise<PostViewModel> {
     await postCollection.insertOne(createdPost)
 
     return this._getPostViewModel(createdPost)
-  },
-  async updateBlog({id, name, description, websiteUrl }) {
+  }
+
+  async updateBlog({id, name, description, websiteUrl }: BlogType): Promise<boolean> {
     const { matchedCount } = await blogCollection.updateOne({ id }, {
       $set: {
         name,
@@ -103,13 +119,15 @@ export const blogRepository: RepositoryBlogType = {
     })
 
     return matchedCount === 1
-  },
-  async deleteBlogById(id) {
+  }
+
+  async deleteBlogById(id: string): Promise<boolean> {
     const { deletedCount } = await blogCollection.deleteOne({ id })
 
     return deletedCount === 1
-  },
-  _getBlogViewModel(dbBlog) {
+  }
+
+  _getBlogViewModel(dbBlog: BlogType): BlogViewModel {
     return {
       id: dbBlog.id,
       name: dbBlog.name,
@@ -117,8 +135,9 @@ export const blogRepository: RepositoryBlogType = {
       websiteUrl: dbBlog.websiteUrl,
       createdAt: dbBlog.createdAt,
     }
-  },
-  _getPostViewModel(dbPost) {
+  }
+
+  _getPostViewModel(dbPost: PostType): PostViewModel {
     return {
       id: dbPost.id,
       title: dbPost.title,
@@ -128,8 +147,15 @@ export const blogRepository: RepositoryBlogType = {
       blogName: dbPost.blogName,
       createdAt: dbPost.createdAt,
     }
-  },
-  _getBlogsViewModelDetail({ items, totalCount, pagesCount, page, pageSize }) {
+  }
+
+  _getBlogsViewModelDetail({
+    items,
+    totalCount,
+    pagesCount,
+    page,
+    pageSize,
+  }: ResponseViewModelDetail<BlogType>): ResponseViewModelDetail<BlogViewModel> {
     return {
       pagesCount,
       page,
@@ -143,8 +169,15 @@ export const blogRepository: RepositoryBlogType = {
         createdAt: item.createdAt,
       })),
     }
-  },
-  _getPostsViewModelDetail({ items, totalCount, pagesCount, page, pageSize }) {
+  }
+
+  _getPostsViewModelDetail({
+    items,
+    totalCount,
+    pagesCount,
+    page,
+    pageSize,
+  }: ResponseViewModelDetail<PostType>): ResponseViewModelDetail<PostViewModel> {
     return {
       pagesCount,
       page,
@@ -160,5 +193,7 @@ export const blogRepository: RepositoryBlogType = {
         createdAt: item.createdAt,
       })),
     }
-  },
+  }
 }
+
+export const blogRepository = new BlogRepository()
