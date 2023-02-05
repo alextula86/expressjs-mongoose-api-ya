@@ -107,7 +107,8 @@ export class CommentsController {
       likesInfo: {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
-        myStatus: currentLikeStatus !== LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
+        // myStatus: currentLikeStatus !== LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
+        myStatus: LikeStatuses.NONE,
         // likes: dbComment.likes,
         // dislikes: dbComment.dislikes,
       },      
