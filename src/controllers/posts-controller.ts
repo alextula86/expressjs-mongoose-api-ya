@@ -149,7 +149,8 @@ export class PostsController {
       likesInfo: {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
-        myStatus: currentLikeStatus === LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
+        // myStatus: currentLikeStatus === LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
+        myStatus: LikeStatuses.NONE,
         // likes: dbComment.likes,
         // dislikes: dbComment.dislikes,
       },      
@@ -185,7 +186,8 @@ export class PostsController {
         likesInfo: {
           likesCount: item.likesCount,
           dislikesCount: item.dislikesCount,
-          myStatus: currentLikeStatus !== LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
+          // myStatus: currentLikeStatus !== LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
+          myStatus: LikeStatuses.NONE,
           // likes: item.likes,
           // dislikes: item.dislikes,
         },      
