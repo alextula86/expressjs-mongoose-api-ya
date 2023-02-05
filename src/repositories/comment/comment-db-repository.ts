@@ -2,11 +2,13 @@ import { commentCollection } from '../db'
 
 import {
   CommentType,
-  CommentViewModel,
   QueryCommentModel,
   UpdateCommentService,
-  
-  ResponseViewModelDetail, SortDirection } from '../../types'
+  ResponseViewModelDetail,
+  LikeStatusCommentType,
+  LikeStatuses,
+  SortDirection,
+} from '../../types'
 
 export class CommentRepository {
   async findAllCommentsByPostId(postId: string, {
@@ -14,7 +16,7 @@ export class CommentRepository {
     pageSize,
     sortBy,
     sortDirection,
-  }: QueryCommentModel): Promise<ResponseViewModelDetail<CommentViewModel>> {
+  }: QueryCommentModel): Promise<ResponseViewModelDetail<CommentType>> {
     const number = pageNumber ? Number(pageNumber) : 1
     const size = pageSize ? Number(pageSize) : 10
     
@@ -32,68 +34,86 @@ export class CommentRepository {
       .limit(size)
       .toArray()
 
-    return this._getCommentsViewModelDetail({
+    return {
       items: comments,
       totalCount,
       pagesCount,
       page: number,
       pageSize: size,
-    })
+    }
   }
-  async findCommentById(id: string): Promise<CommentViewModel | null> {
+  async findCommentById(id: string): Promise<CommentType | null> {
     const foundComment: CommentType | null = await commentCollection.findOne({ id })
 
     if (!foundComment) {
       return null
     }
 
-    return this._getCommentViewModel(foundComment)
+    return foundComment
   }
-  async createdComment(createdComment: CommentType): Promise<CommentViewModel> {
+  async createdComment(createdComment: CommentType): Promise<CommentType> {
     await commentCollection.insertOne(createdComment)
 
-    return this._getCommentViewModel(createdComment)
+    return createdComment
   }
-  async updateComment({id, content }: UpdateCommentService): Promise<boolean> {
+  async updateComment({ id, content }: UpdateCommentService): Promise<boolean> {
     const { matchedCount } = await commentCollection.updateOne({ id }, {
       $set: { content }
     })
 
     return matchedCount === 1
   }
+  async updateLikeStatusToComment(commentId: string, createdLikeStatus: LikeStatusCommentType
+  ): Promise<boolean> {
+    if (createdLikeStatus.likeStatus === LikeStatuses.LIKE) {
+      await commentCollection.findOneAndUpdate(
+        { id: commentId, "dislikes.userId": createdLikeStatus.userId },
+        { $inc: { dislikesCount: -1 }, $pull: { dislikes: { userId: createdLikeStatus.userId } } },
+      )      
+      
+      await commentCollection.findOneAndUpdate(
+        { id: commentId, "likes.userId": { $ne: createdLikeStatus.userId } },
+        { $inc: { likesCount: 1 }, $push: { likes: createdLikeStatus } },
+        { returnDocument: 'after' }
+      )
+
+      return true
+    }
+
+    if (createdLikeStatus.likeStatus === LikeStatuses.DISLIKE) {
+      await commentCollection.findOneAndUpdate(
+        { id: commentId, "likes.userId": createdLikeStatus.userId },
+        { $inc: { likesCount: -1 }, $pull: { likes: { userId: createdLikeStatus.userId } } },
+      )      
+      
+      await commentCollection.findOneAndUpdate(
+        { id: commentId, "dislikes.userId": { $ne: createdLikeStatus.userId } },
+        { $inc: { dislikesCount: 1 }, $push: { dislikes: createdLikeStatus } },
+        { returnDocument: 'after' }
+      )
+
+      return true
+    }
+
+    if (createdLikeStatus.likeStatus === LikeStatuses.NONE) {
+      await commentCollection.findOneAndUpdate(
+        { id: commentId, "likes.userId": createdLikeStatus.userId },
+        { $inc: { likesCount: -1 }, $pull: { likes: { userId: createdLikeStatus.userId } } },
+      )  
+      
+      await commentCollection.findOneAndUpdate(
+        { id: commentId, "dislikes.userId": createdLikeStatus.userId },
+        { $inc: { dislikesCount: -1 }, $pull: { dislikes: { userId: createdLikeStatus.userId } } },
+      )
+      
+      return true
+    } 
+
+    return false
+  }  
   async deleteCommentById(id: string): Promise<boolean> {
     const { deletedCount } = await commentCollection.deleteOne({ id })
 
     return deletedCount === 1
-  }
-  _getCommentViewModel(dbComments: CommentType): CommentViewModel {
-    return {
-      id: dbComments.id,
-      content: dbComments.content,
-      userId: dbComments.userId,
-      userLogin: dbComments.userLogin,
-      createdAt: dbComments.createdAt,
-    }
-  }
-  _getCommentsViewModelDetail({
-    items,
-    totalCount,
-    pagesCount,
-    page,
-    pageSize,
-  }: ResponseViewModelDetail<CommentType>): ResponseViewModelDetail<CommentViewModel> {
-    return {
-      pagesCount,
-      page,
-      pageSize,
-      totalCount,
-      items: items.map(item => ({
-        id: item.id,
-        content: item.content,
-        userId: item.userId,
-        userLogin: item.userLogin,
-        createdAt: item.createdAt,
-      })),
-    }
   }
 }

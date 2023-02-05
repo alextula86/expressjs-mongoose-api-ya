@@ -16,8 +16,10 @@ import {
   CreateCommentsModel,
   UpdatePostModel,
   PostViewModel,
+  CommentType,
   CommentViewModel,
   ResponseViewModelDetail,
+  LikeStatuses,
   HTTPStatuses,
   ErrorsMessageType,
 } from '../types'
@@ -62,7 +64,7 @@ export class PostsController {
       sortDirection: req.query.sortDirection,
     })
 
-    res.status(HTTPStatuses.SUCCESS200).send(commentsByPostId)
+    res.status(HTTPStatuses.SUCCESS200).send(this._getCommentsViewModelDetail(commentsByPostId))
   }
   async createPost(req: RequestWithBody<CreatePostModel>, res: Response<PostViewModel | ErrorsMessageType>) {
     const blogById = await this.blogService.findBlogById(req.body.blogId)
@@ -95,7 +97,7 @@ export class PostsController {
       userLogin: req.user!.login,
     })
 
-    res.status(HTTPStatuses.CREATED201).send(createdCommentByPostId)
+    res.status(HTTPStatuses.CREATED201).send(this._getCommentViewModel(createdCommentByPostId))
   }
   async updatePost(req: RequestWithParamsAndBody<URIParamsPostModel, UpdatePostModel>, res: Response<boolean>) {
     const blogById = await this.blogService.findBlogById(req.body.blogId)
@@ -127,5 +129,67 @@ export class PostsController {
     }
     
     res.status(HTTPStatuses.NOCONTENT204).send()
+  }
+  _getCommentViewModel(dbComment: CommentType): CommentViewModel {
+    const currentLike = dbComment.likes.find(item => item.userId === dbComment.userId)
+
+    const currentDislike = dbComment.dislikes.find(item => item.userId === dbComment.userId)
+
+    const currentLikeStatus = currentLike ? currentLike.likeStatus : LikeStatuses.NONE
+    const currentDislikeStatus = currentDislike ? currentDislike.likeStatus : LikeStatuses.NONE
+
+    return {
+      id: dbComment.id,
+      content: dbComment.content,
+      commentatorInfo: {
+        userId: dbComment.userId,
+        userLogin: dbComment.userLogin,
+      },
+      createdAt: dbComment.createdAt,
+      likesInfo: {
+        likesCount: dbComment.likesCount,
+        dislikesCount: dbComment.dislikesCount,
+        myStatus: currentLikeStatus === LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
+        likes: dbComment.likes,
+        dislikes: dbComment.dislikes,
+      },      
+    }
+  }
+  _getCommentsViewModelDetail({
+    items,
+    totalCount,
+    pagesCount,
+    page,
+    pageSize,
+  }: ResponseViewModelDetail<CommentType>): ResponseViewModelDetail<CommentViewModel> {
+    return {
+      pagesCount,
+      page,
+      pageSize,
+      totalCount,
+      items: items.map(item => {
+        const currentLike = item.likes.find(i => i.userId === item.userId)
+        const currentDislike = item.dislikes.find(i => i.userId === item.userId)
+    
+        const currentLikeStatus = currentLike ? currentLike.likeStatus : LikeStatuses.NONE
+        const currentDislikeStatus = currentDislike ? currentDislike.likeStatus : LikeStatuses.NONE
+        
+        return {
+        id: item.id,
+        content: item.content,
+        commentatorInfo: {
+          userId: item.userId,
+          userLogin: item.userLogin,
+        },
+        createdAt: item.createdAt,
+        likesInfo: {
+          likesCount: item.likesCount,
+          dislikesCount: item.dislikesCount,
+          myStatus: currentLikeStatus !== LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
+          likes: item.likes,
+          dislikes: item.dislikes,
+        },      
+      }}),
+    }
   }
 }

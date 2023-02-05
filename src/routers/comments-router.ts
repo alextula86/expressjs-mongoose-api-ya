@@ -17,4 +17,5 @@ const middlewares = [
 commentsRouter
   .get('/:id', commentsController.getComment.bind(commentsController))  
   .put('/:id', middlewares, commentsController.updateComment.bind(commentsController))
+  .put('/:id/like-status', authBearerMiddleware, commentsController.updateLikeStatusToComment.bind(commentsController))
   .delete('/:id', authBearerMiddleware, commentsController.deleteComment.bind(commentsController))

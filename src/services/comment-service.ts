@@ -3,12 +3,14 @@ import { CommentRepository } from '../repositories/comment/comment-db-repository
 
 import {
   CommentType,
-  CommentViewModel,
+  LikeStatusCommentType,
   QueryCommentModel,
   CreateCommentService,
   UpdateCommentService,
+  UpdateLikeToCommentService,
   ResponseViewModelDetail,
   SortDirection,
+
  } from '../types'
 
 export class CommentService {
@@ -18,7 +20,7 @@ export class CommentService {
     pageSize,
     sortBy = 'createdAt',
     sortDirection = SortDirection.DESC,
-  }: QueryCommentModel): Promise<ResponseViewModelDetail<CommentViewModel>> {
+  }: QueryCommentModel): Promise<ResponseViewModelDetail<CommentType>> {
     const foundAllComments = await this.commentRepository.findAllCommentsByPostId(postId, {
       pageNumber,
       pageSize,
@@ -28,7 +30,7 @@ export class CommentService {
 
     return foundAllComments
   }
-  async findCommentById(id: string): Promise<CommentViewModel | null> {
+  async findCommentById(id: string ): Promise<CommentType | null> {
     const foundCommentById = await this.commentRepository.findCommentById(id)
 
     return foundCommentById
@@ -38,7 +40,7 @@ export class CommentService {
     postId,
     userId,
     userLogin,
-  }: CreateCommentService): Promise<CommentViewModel> {
+  }: CreateCommentService): Promise<CommentType> {
     const commentContent = trim(String(content))
     
     const newComment = new CommentType(commentContent, postId, userId, userLogin)
@@ -56,6 +58,16 @@ export class CommentService {
     }
 
     const isUpdatedComment = await this.commentRepository.updateComment(updatedComment)
+
+    return isUpdatedComment
+  }
+  async updateLikeStatusToComment(commentId: string, {
+    userId,
+    userLogin,
+    likeStatus,
+  }: UpdateLikeToCommentService): Promise<boolean> {
+    const createdLikeStatus = new LikeStatusCommentType(userId, userLogin, likeStatus)
+    const isUpdatedComment = await this.commentRepository.updateLikeStatusToComment(commentId, createdLikeStatus)
 
     return isUpdatedComment
   }

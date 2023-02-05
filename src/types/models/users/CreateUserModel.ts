@@ -4,7 +4,7 @@ export type CreateUserModel = {
     * password of new user
     * email of new user
   */
-  login: string,
-  password: string,
-  email: string,
+  login: string
+  password: string
+  email: string
 }
