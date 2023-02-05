@@ -108,46 +108,9 @@ export class CommentsController {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
         myStatus: currentLikeStatus !== LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
-        likes: dbComment.likes,
-        dislikes: dbComment.dislikes,
+        // likes: dbComment.likes,
+        // dislikes: dbComment.dislikes,
       },      
     }
-  }
-  _getCommentsViewModelDetail({
-    items,
-    totalCount,
-    pagesCount,
-    page,
-    pageSize,
-  }: ResponseViewModelDetail<CommentType>): ResponseViewModelDetail<CommentViewModel> {
-      return {
-        pagesCount,
-        page,
-        pageSize,
-        totalCount,
-        items: items.map(item => {
-          const currentLike = item.likes.find(i => i.userId === item.userId)
-          const currentDislike = item.dislikes.find(i => i.userId === item.userId)
-      
-          const currentLikeStatus = currentLike ? currentLike.likeStatus : LikeStatuses.NONE
-          const currentDislikeStatus = currentDislike ? currentDislike.likeStatus : LikeStatuses.NONE
-          
-          return {
-          id: item.id,
-          content: item.content,
-          commentatorInfo: {
-            userId: item.userId,
-            userLogin: item.userLogin,
-          },
-          createdAt: item.createdAt,
-          likesInfo: {
-            likesCount: item.likesCount,
-            dislikesCount: item.dislikesCount,
-            myStatus: currentLikeStatus === LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
-            likes: item.likes,
-            dislikes: item.dislikes,
-          },      
-        }}),
-      }
-    }
-  }
+  } 
+}
