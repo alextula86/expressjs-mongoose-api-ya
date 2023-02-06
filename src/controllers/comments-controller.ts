@@ -99,8 +99,8 @@ export class CommentsController {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
         myStatus,
-        likes: dbComment.likes,
-        dislikes: dbComment.dislikes,
+        // likes: dbComment.likes,
+        // dislikes: dbComment.dislikes,
       },      
     }
   } 

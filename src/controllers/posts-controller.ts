@@ -165,8 +165,8 @@ export class PostsController {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
         myStatus,
-        likes: dbComment.likes,
-        dislikes: dbComment.dislikes,
+        // likes: dbComment.likes,
+        // dislikes: dbComment.dislikes,
       },      
     }
   }
@@ -197,8 +197,8 @@ export class PostsController {
             likesCount: item.likesCount,
             dislikesCount: item.dislikesCount,
             myStatus,
-            likes: item.likes,
-            dislikes: item.dislikes,
+            // likes: item.likes,
+            // dislikes: item.dislikes,
           },      
         }
       }),
