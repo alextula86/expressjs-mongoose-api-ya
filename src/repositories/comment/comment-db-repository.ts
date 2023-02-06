@@ -68,12 +68,12 @@ export class CommentRepository {
     if (createdLikeStatus.likeStatus === LikeStatuses.LIKE) {
       await commentCollection.findOneAndUpdate(
         { id: commentId, "dislikes.userId": createdLikeStatus.userId },
-        { $inc: { dislikesCount: -1 }, $pull: { dislikes: { userId: createdLikeStatus.userId } } },
+        { $inc: { dislikesCount: -1 }, $set: { myStatus: createdLikeStatus.likeStatus }, $pull: { dislikes: { userId: createdLikeStatus.userId } } },
       )      
       
       await commentCollection.findOneAndUpdate(
         { id: commentId, "likes.userId": { $ne: createdLikeStatus.userId } },
-        { $inc: { likesCount: 1 }, $push: { likes: createdLikeStatus } },
+        { $inc: { likesCount: 1 }, $set: { myStatus: createdLikeStatus.likeStatus }, $push: { likes: createdLikeStatus } },
         { returnDocument: 'after' }
       )
 
@@ -83,12 +83,12 @@ export class CommentRepository {
     if (createdLikeStatus.likeStatus === LikeStatuses.DISLIKE) {
       await commentCollection.findOneAndUpdate(
         { id: commentId, "likes.userId": createdLikeStatus.userId },
-        { $inc: { likesCount: -1 }, $pull: { likes: { userId: createdLikeStatus.userId } } },
+        { $inc: { likesCount: -1 }, $set: { myStatus: createdLikeStatus.likeStatus }, $pull: { likes: { userId: createdLikeStatus.userId } } },
       )      
       
       await commentCollection.findOneAndUpdate(
         { id: commentId, "dislikes.userId": { $ne: createdLikeStatus.userId } },
-        { $inc: { dislikesCount: 1 }, $push: { dislikes: createdLikeStatus } },
+        { $inc: { dislikesCount: 1 }, $set: { myStatus: createdLikeStatus.likeStatus }, $push: { dislikes: createdLikeStatus } },
         { returnDocument: 'after' }
       )
 
@@ -98,12 +98,12 @@ export class CommentRepository {
     if (createdLikeStatus.likeStatus === LikeStatuses.NONE) {
       await commentCollection.findOneAndUpdate(
         { id: commentId, "likes.userId": createdLikeStatus.userId },
-        { $inc: { likesCount: -1 }, $pull: { likes: { userId: createdLikeStatus.userId } } },
+        { $inc: { likesCount: -1 }, $set: { myStatus: createdLikeStatus.likeStatus }, $pull: { likes: { userId: createdLikeStatus.userId } } },
       )  
       
       await commentCollection.findOneAndUpdate(
         { id: commentId, "dislikes.userId": createdLikeStatus.userId },
-        { $inc: { dislikesCount: -1 }, $pull: { dislikes: { userId: createdLikeStatus.userId } } },
+        { $inc: { dislikesCount: -1 }, $set: { myStatus: createdLikeStatus.likeStatus }, $pull: { dislikes: { userId: createdLikeStatus.userId } } },
       )
       
       return true
