@@ -5,7 +5,6 @@ import { CommentService } from '../services'
 import {
   RequestWithParams,
   RequestWithParamsAndBody,
-  ResponseViewModelDetail,
   URIParamsCommentModel,
   UserRequestModel,
   UpdateCommentModel,
@@ -58,9 +57,9 @@ export class CommentsController {
       return res.status(HTTPStatuses.NOTFOUND404).send()
     }
 
-    if (commentById.userId !== req.user!.userId || commentById.userLogin !== req.user!.login) {
+    /* if (commentById.userId !== req.user!.userId || commentById.userLogin !== req.user!.login) {
       return res.status(HTTPStatuses.FORBIDDEN403).send()
-    }
+    } */
 
     const isLikeUpdated = await this.commentService.updateLikeStatusToComment(commentById.id, {
       userId: req.user!.userId,
@@ -90,11 +89,11 @@ export class CommentsController {
     res.status(HTTPStatuses.NOCONTENT204).send()
   }
   _getCommentViewModel(dbComment: CommentType): CommentViewModel {
-    const currentLike = dbComment.likes.find(item => item.userId === dbComment.userId)
-    const currentDislike = dbComment.dislikes.find(item => item.userId === dbComment.userId)
+    // const currentLike = dbComment.likes.find(item => item.userId === dbComment.userId)
+    // const currentDislike = dbComment.dislikes.find(item => item.userId === dbComment.userId)
 
-    const currentLikeStatus = currentLike ? currentLike.likeStatus : LikeStatuses.NONE
-    const currentDislikeStatus = currentDislike ? currentDislike.likeStatus : LikeStatuses.NONE
+    // const currentLikeStatus = currentLike ? currentLike.likeStatus : LikeStatuses.NONE
+    // const currentDislikeStatus = currentDislike ? currentDislike.likeStatus : LikeStatuses.NONE
 
     return {
       id: dbComment.id,

@@ -3,4 +3,9 @@ export const commentsErrorsValidator = {
     message: "content is incorrectly",
     field: "content"
   },
+
+  likeStatus: {
+    message: "likeStatus is incorrectly",
+    field: "likeStatus"
+  },  
 }
