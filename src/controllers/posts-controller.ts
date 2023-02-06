@@ -131,12 +131,14 @@ export class PostsController {
     res.status(HTTPStatuses.NOCONTENT204).send()
   }
   _getCommentViewModel(dbComment: CommentType): CommentViewModel {
+    /*
     const currentLike = dbComment.likes.find(item => item.userId === dbComment.userId)
 
     const currentDislike = dbComment.dislikes.find(item => item.userId === dbComment.userId)
 
     const currentLikeStatus = currentLike ? currentLike.likeStatus : LikeStatuses.NONE
     const currentDislikeStatus = currentDislike ? currentDislike.likeStatus : LikeStatuses.NONE
+    */
 
     return {
       id: dbComment.id,
@@ -150,9 +152,9 @@ export class PostsController {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
         // myStatus: currentLikeStatus === LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
-        myStatus: LikeStatuses.NONE,
-        // likes: dbComment.likes,
-        // dislikes: dbComment.dislikes,
+        myStatus: dbComment.myStatus,
+        likes: dbComment.likes,
+        dislikes: dbComment.dislikes,
       },      
     }
   }
@@ -169,29 +171,32 @@ export class PostsController {
       pageSize,
       totalCount,
       items: items.map(item => {
+        /*
         const currentLike = item.likes.find(i => i.userId === item.userId)
         const currentDislike = item.dislikes.find(i => i.userId === item.userId)
     
         const currentLikeStatus = currentLike ? currentLike.likeStatus : LikeStatuses.NONE
         const currentDislikeStatus = currentDislike ? currentDislike.likeStatus : LikeStatuses.NONE
-        
+        */
+
         return {
-        id: item.id,
-        content: item.content,
-        commentatorInfo: {
-          userId: item.userId,
-          userLogin: item.userLogin,
-        },
-        createdAt: item.createdAt,
-        likesInfo: {
-          likesCount: item.likesCount,
-          dislikesCount: item.dislikesCount,
-          // myStatus: currentLikeStatus !== LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
-          myStatus: LikeStatuses.NONE,
-          // likes: item.likes,
-          // dislikes: item.dislikes,
-        },      
-      }}),
+          id: item.id,
+          content: item.content,
+          commentatorInfo: {
+            userId: item.userId,
+            userLogin: item.userLogin,
+          },
+          createdAt: item.createdAt,
+          likesInfo: {
+            likesCount: item.likesCount,
+            dislikesCount: item.dislikesCount,
+            // myStatus: currentLikeStatus !== LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
+            myStatus: item.myStatus,
+            likes: item.likes,
+            dislikes: item.dislikes,
+          },      
+        }
+      }),
     }
   }
 }

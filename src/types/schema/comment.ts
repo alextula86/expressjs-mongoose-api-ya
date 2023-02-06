@@ -19,6 +19,7 @@ export class CommentType {
   createdAt: string
   likesCount: number
   dislikesCount: number
+  myStatus: LikeStatuses
   likes: LikeStatusCommentType[]
   dislikes: LikeStatusCommentType[]
   constructor(
@@ -30,6 +31,7 @@ export class CommentType {
     this.id = getNextStrId()
     this.likesCount = 0
     this.dislikesCount = 0
+    this.myStatus = LikeStatuses.NONE
     this.likes = []
     this.dislikes = []
     this.createdAt = new Date().toISOString()

@@ -89,12 +89,6 @@ export class CommentsController {
     res.status(HTTPStatuses.NOCONTENT204).send()
   }
   _getCommentViewModel(dbComment: CommentType): CommentViewModel {
-    // const currentLike = dbComment.likes.find(item => item.userId === dbComment.userId)
-    // const currentDislike = dbComment.dislikes.find(item => item.userId === dbComment.userId)
-
-    // const currentLikeStatus = currentLike ? currentLike.likeStatus : LikeStatuses.NONE
-    // const currentDislikeStatus = currentDislike ? currentDislike.likeStatus : LikeStatuses.NONE
-
     return {
       id: dbComment.id,
       content: dbComment.content,
@@ -106,10 +100,9 @@ export class CommentsController {
       likesInfo: {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
-        // myStatus: currentLikeStatus !== LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
-        myStatus: LikeStatuses.NONE,
-        // likes: dbComment.likes,
-        // dislikes: dbComment.dislikes,
+        myStatus: dbComment.myStatus,
+        likes: dbComment.likes,
+        dislikes: dbComment.dislikes,
       },      
     }
   } 
