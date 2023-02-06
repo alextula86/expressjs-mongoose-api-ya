@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { commentsController } from '../composition-roots'
 import {
   authBearerMiddleware,
+  getUserByBearerOrRefreshTokenMiddleware,
   contentCommentValidation,
   likeStatusCommentValidation,
   inputValidationMiddleware,
@@ -23,7 +24,7 @@ const middlewaresLikeStatus = [
 
 
 commentsRouter
-  .get('/:id', commentsController.getComment.bind(commentsController))  
+  .get('/:id', getUserByBearerOrRefreshTokenMiddleware, commentsController.getComment.bind(commentsController))  
   .put('/:id', middlewares, commentsController.updateComment.bind(commentsController))
   .put('/:id/like-status', middlewaresLikeStatus, commentsController.updateLikeStatusToComment.bind(commentsController))
   .delete('/:id', authBearerMiddleware, commentsController.deleteComment.bind(commentsController))

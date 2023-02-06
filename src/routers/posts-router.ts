@@ -4,6 +4,7 @@ import { postsController } from '../composition-roots'
 import {
   authBasicMiddleware,
   authBearerMiddleware,
+  getUserByBearerOrRefreshTokenMiddleware,
   titlePostValidation,
   shortPostDescriptionValidation,
   contentPostValidation,
@@ -32,7 +33,7 @@ const middlewaresComment = [
 postsRouter
   .get('/', postsController.getPosts.bind(postsController))
   .get('/:id', postsController.getPost.bind(postsController) )
-  .get('/:postId/comments', postsController.getCommentsByPostId.bind(postsController) )  
+  .get('/:postId/comments', getUserByBearerOrRefreshTokenMiddleware, postsController.getCommentsByPostId.bind(postsController) )  
   .post('/', middlewares, postsController.createPost.bind(postsController) )
   .post('/:postId/comments', middlewaresComment, postsController.createCommentsByPostId.bind(postsController) )
   .put('/:id', middlewares, postsController.updatePost.bind(postsController) )

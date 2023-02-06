@@ -50,7 +50,7 @@ export class PostsController {
 
     res.status(HTTPStatuses.SUCCESS200).send(postById)
   }
-  async getCommentsByPostId(req: RequestWithParamsAndQuery<URIParamsCommentsByPostId, QueryCommentModel>, res: Response<ResponseViewModelDetail<CommentViewModel>>) {
+  async getCommentsByPostId(req: RequestWithParamsAndQuery<URIParamsCommentsByPostId, QueryCommentModel> & any, res: Response<ResponseViewModelDetail<CommentViewModel>>) {
     const postById = await this.postService.findPostById(req.params.postId)
 
     if (!postById) {
@@ -64,7 +64,7 @@ export class PostsController {
       sortDirection: req.query.sortDirection,
     })
 
-    res.status(HTTPStatuses.SUCCESS200).send(this._getCommentsViewModelDetail(commentsByPostId))
+    res.status(HTTPStatuses.SUCCESS200).send(this._getCommentsViewModelDetail(commentsByPostId, req?.user?.userId))
   }
   async createPost(req: RequestWithBody<CreatePostModel>, res: Response<PostViewModel | ErrorsMessageType>) {
     const blogById = await this.blogService.findBlogById(req.body.blogId)
@@ -97,7 +97,7 @@ export class PostsController {
       userLogin: req.user!.login,
     })
 
-    res.status(HTTPStatuses.CREATED201).send(this._getCommentViewModel(createdCommentByPostId))
+    res.status(HTTPStatuses.CREATED201).send(this._getCommentViewModel(createdCommentByPostId, req?.user?.userId))
   }
   async updatePost(req: RequestWithParamsAndBody<URIParamsPostModel, UpdatePostModel>, res: Response<boolean>) {
     const blogById = await this.blogService.findBlogById(req.body.blogId)
@@ -130,15 +130,28 @@ export class PostsController {
     
     res.status(HTTPStatuses.NOCONTENT204).send()
   }
-  _getCommentViewModel(dbComment: CommentType): CommentViewModel {
-    /*
-    const currentLike = dbComment.likes.find(item => item.userId === dbComment.userId)
+  _getMyStatus(dbComment: CommentType, userId: string): LikeStatuses {
+    if (!userId) {
+      return LikeStatuses.NONE
+    }
 
-    const currentDislike = dbComment.dislikes.find(item => item.userId === dbComment.userId)
+    const currentLike = dbComment.likes.find(item => item.userId === userId)
 
-    const currentLikeStatus = currentLike ? currentLike.likeStatus : LikeStatuses.NONE
-    const currentDislikeStatus = currentDislike ? currentDislike.likeStatus : LikeStatuses.NONE
-    */
+    if (currentLike) {
+      return currentLike.likeStatus
+    }
+
+    const currentDislike = dbComment.dislikes.find(item => item.userId === userId)
+
+    if (currentDislike) {
+      return currentDislike.likeStatus
+    }
+
+    return LikeStatuses.NONE
+    
+  }
+  _getCommentViewModel(dbComment: CommentType, userId: string): CommentViewModel {
+    const myStatus = this._getMyStatus(dbComment, userId)
 
     return {
       id: dbComment.id,
@@ -151,10 +164,9 @@ export class PostsController {
       likesInfo: {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
-        // myStatus: currentLikeStatus === LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
-        myStatus: dbComment.myStatus,
-        // likes: dbComment.likes,
-        // dislikes: dbComment.dislikes,
+        myStatus,
+        likes: dbComment.likes,
+        dislikes: dbComment.dislikes,
       },      
     }
   }
@@ -164,20 +176,14 @@ export class PostsController {
     pagesCount,
     page,
     pageSize,
-  }: ResponseViewModelDetail<CommentType>): ResponseViewModelDetail<CommentViewModel> {
+  }: ResponseViewModelDetail<CommentType>, userId: string): ResponseViewModelDetail<CommentViewModel> {
     return {
       pagesCount,
       page,
       pageSize,
       totalCount,
       items: items.map(item => {
-        /*
-        const currentLike = item.likes.find(i => i.userId === item.userId)
-        const currentDislike = item.dislikes.find(i => i.userId === item.userId)
-    
-        const currentLikeStatus = currentLike ? currentLike.likeStatus : LikeStatuses.NONE
-        const currentDislikeStatus = currentDislike ? currentDislike.likeStatus : LikeStatuses.NONE
-        */
+        const myStatus = this._getMyStatus(item, userId)
 
         return {
           id: item.id,
@@ -190,10 +196,9 @@ export class PostsController {
           likesInfo: {
             likesCount: item.likesCount,
             dislikesCount: item.dislikesCount,
-            // myStatus: currentLikeStatus !== LikeStatuses.NONE ? currentLikeStatus : currentDislikeStatus,
-            myStatus: item.myStatus,
-            // likes: item.likes,
-            // dislikes: item.dislikes,
+            myStatus,
+            likes: item.likes,
+            dislikes: item.dislikes,
           },      
         }
       }),
