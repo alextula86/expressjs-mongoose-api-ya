@@ -1,7 +1,7 @@
 import { BlogRepository } from './repositories/blog/blog-db-repository'
 import { PostRepository } from './repositories/post/post-db-repository'
 import { CommentRepository } from './repositories/comment/comment-db-repository'
-import { UserRepository } from './repositories/user/user-db-repository'
+import { UserRepository } from './repositories/user/user-db-mongoose-repository'
 import { DeviceRepository } from './repositories/device/device-db-repository'
 
 import {

@@ -1,5 +1,5 @@
 import { NextFunction, Response } from 'express'
-import { UserRepository } from '../repositories/user/user-db-repository'
+import { UserRepository } from '../repositories/user/user-db-mongoose-repository'
 import { AuthService, UserService } from '../services'
 import { HTTPStatuses } from '../types'
 import { usersErrorsValidator } from '../errors'

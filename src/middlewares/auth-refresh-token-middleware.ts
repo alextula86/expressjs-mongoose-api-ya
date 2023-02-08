@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import * as dotenv from 'dotenv'
 dotenv.config()
-import { UserRepository } from '../repositories/user/user-db-repository'
+import { UserRepository } from '../repositories/user/user-db-mongoose-repository'
 import { DeviceRepository } from '../repositories/device/device-db-repository'
 
 import {

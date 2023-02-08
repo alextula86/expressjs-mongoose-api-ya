@@ -1,6 +1,6 @@
 import { trim } from 'lodash'
 import bcrypt from 'bcrypt'
-import { UserRepository } from '../repositories/user/user-db-repository'
+import { UserRepository } from '../repositories/user/user-db-mongoose-repository'
 import { generateUUID } from '../utils'
 
 import {

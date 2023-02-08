@@ -1,3 +1,5 @@
+import mongoose from 'mongoose'
+const { Schema } = mongoose
 import { getNextStrId } from '../../utils'
   
 export class BlogType {

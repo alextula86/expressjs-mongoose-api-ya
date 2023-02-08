@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb'
+import mongoose from 'mongoose'
 import * as dotenv from 'dotenv'
 import {
   BlogType,
@@ -8,9 +9,17 @@ import {
   DeviceType,
   SessionType,
 } from '../types'
+
+import {
+  userSchema,
+  blogSchema,
+  postSchema,
+  commentSchema,
+} from '../schemes'
+
 dotenv.config()
 
-const mongoUri = process.env.MONGO_ATLAS_URI || process.env.MONGO_URI
+const mongoUri = process.env.MONGO_ATLAS_URI || 'mongodb://localhost:27017/bloggers'
 
 if (!mongoUri) {
   throw new Error('Url doesnt found')
@@ -19,20 +28,29 @@ if (!mongoUri) {
 const client = new MongoClient(mongoUri)
 const db = client.db()
 
+export const userCollection = db.collection<UserType>('users')
 export const blogCollection = db.collection<BlogType>('blogs')
 export const postCollection = db.collection<PostType>('posts')
 export const commentCollection = db.collection<CommentType>('comments')
-export const userCollection = db.collection<UserType>('users')
 export const deviceCollection = db.collection<DeviceType>('devices')
 export const sessionCollection = db.collection<SessionType>('sessions')
+
+export const UserModal = mongoose.model('users', userSchema)
+export const BlogModal = mongoose.model('blogs', blogSchema)
+export const PostModal = mongoose.model('posts', postSchema)
+export const CommentModal = mongoose.model('comments', commentSchema)
 
 export async function runDb() {
   try {
     await client.connect()
     await client.db().command({ ping: 1 })
-    console.log('Connected successfully to server')
+    console.log('Connected successfully to server by MongoClient')
+
+    await mongoose.connect('mongodb://localhost:27017/bloggers')
+    console.log('Connected successfully to server by mongoose')
   } catch {
     console.log('Can`t connect to db')
     await client.close()
+    await mongoose.disconnect()
   }
 }
