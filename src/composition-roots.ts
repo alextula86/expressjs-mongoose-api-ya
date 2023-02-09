@@ -1,8 +1,8 @@
-import { BlogRepository } from './repositories/blog/blog-db-repository'
-import { PostRepository } from './repositories/post/post-db-repository'
-import { CommentRepository } from './repositories/comment/comment-db-repository'
+import { BlogRepository } from './repositories/blog/blog-db-mongoose-repository'
+import { PostRepository } from './repositories/post/post-db-mongoose-repository'
+import { CommentRepository } from './repositories/comment/comment-db-mongoose-repository'
 import { UserRepository } from './repositories/user/user-db-mongoose-repository'
-import { DeviceRepository } from './repositories/device/device-db-repository'
+import { DeviceRepository } from './repositories/device/device-db-mongoose-repository'
 
 import {
     BlogService,

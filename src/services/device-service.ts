@@ -1,4 +1,4 @@
-import { DeviceRepository } from '../repositories/device/device-db-repository'
+import { DeviceRepository } from '../repositories/device/device-db-mongoose-repository'
 import { DeviceType, DeviceViewModel, CreaetDeviceService } from '../types'
 
 export class DeviceService {

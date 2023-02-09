@@ -1,35 +1,29 @@
-import { sessionRepository } from '../repositories/session/session-db-repository'
+import { SessionRepository } from '../repositories/session/session-db-mongoose-repository'
 import { getNextStrId } from '../utils'
-import { SessionType, ServiceSessionType } from '../types'
+import { SessionType, CreaetSessionService } from '../types'
 
-export const sessionService: ServiceSessionType = {
-  async findSession(ip, url, deviceTitle) {
-    const foundSession = await sessionRepository.findSession(ip, url, deviceTitle)
+export class SessionService {
+  constructor(protected sessionRepository: SessionRepository) {}
+
+  async findSession(ip: string, url: string, deviceTitle: string): Promise<SessionType | null> {
+    const foundSession = await this.sessionRepository.findSession(ip, url, deviceTitle)
 
     return foundSession
-  },
-  async createdSession({ ip, deviceTitle, url }) {
-    const newUSession: SessionType = {
-      id: getNextStrId(),
-      ip,
-      deviceTitle,
-      url,
-      issuedAtt: new Date().toISOString(),
-      attempt: 1,
-    }
-
-    const createdSession = await sessionRepository.createdSession(newUSession)
+  }
+  async createdSession({ ip, deviceTitle, url }: CreaetSessionService): Promise<SessionType> {
+    const newUSession = new SessionType(ip, deviceTitle, url)
+    const createdSession = await this.sessionRepository.createdSession(newUSession)
 
     return createdSession
-  },
-  async increaseAttempt(id) {
-    const isIncreaseAttempt = await sessionRepository.increaseAttempt(id)
+  }
+  async increaseAttempt(id: string): Promise<SessionType | null> {
+    const isIncreaseAttempt = await this.sessionRepository.increaseAttempt(id)
 
     return isIncreaseAttempt
-  },
-  async resetAttempt(id) {
-    const isResetAttempt = await sessionRepository.resetAttempt(id)
+  }
+  async resetAttempt(id: string): Promise<boolean> {
+    const isResetAttempt = await this.sessionRepository.resetAttempt(id)
 
     return isResetAttempt
-  },  
+  }
 }

@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
-import { sessionService } from '../services'
+import { SessionService } from '../services'
+import { SessionRepository } from '../repositories/session/session-db-mongoose-repository'
 import { HTTPStatuses } from '../types'
 
 export const сountRequestsMiddleware = async (req: Request & any, res: Response, next: NextFunction) => {
@@ -10,6 +11,9 @@ export const сountRequestsMiddleware = async (req: Request & any, res: Response
   const limitSecondsRate = 10
   const maxAttemps = 5
     
+  const sessionRepository = new SessionRepository()
+  const sessionService = new SessionService(sessionRepository)
+
   const foundSession = await sessionService.findSession(ip, url, deviceTitle)
 
   if (!foundSession) {

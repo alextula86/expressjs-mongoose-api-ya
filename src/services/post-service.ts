@@ -1,5 +1,5 @@
 import { trim } from 'lodash'
-import { PostRepository } from '../repositories/post/post-db-repository'
+import { PostRepository } from '../repositories/post/post-db-mongoose-repository'
 
 import {
   PostType,

@@ -1,6 +1,5 @@
 import { isEmpty } from 'lodash'
-// import { userCollection } from '../db'
-import { UserModal } from '../db'
+import { UserModel } from '../db-mongoose'
 
 import {
   UserType,
@@ -36,11 +35,11 @@ export class UserRepository {
 
     const filter = !isEmpty(query) ? { $or: query } : {}
  
-    const totalCount = await UserModal.count(filter)
+    const totalCount = await UserModel.count(filter)
     const pagesCount = Math.ceil(totalCount / size)
     const skip = (number - 1) * size
 
-    const users: UserType[] = await UserModal
+    const users: UserType[] = await UserModel
       .find(filter)
       .sort(sort)
       .skip(skip)
@@ -56,7 +55,7 @@ export class UserRepository {
     })
   }
   async findUserById(id: string): Promise<UserAuthViewModel | null> {
-    const foundUser: UserType | null = await UserModal.findOne({ id })
+    const foundUser: UserType | null = await UserModel.findOne({ id })
 
     if (!foundUser) {
       return null
@@ -65,7 +64,7 @@ export class UserRepository {
     return this._getUserAuthViewModel(foundUser)
   }
   async findRefreshTokenByUserId(userId: string): Promise<{ refreshToken: string } | null> {
-    const foundUser: UserType | null = await UserModal.findOne({ 'id': userId })
+    const foundUser: UserType | null = await UserModel.findOne({ 'id': userId })
 
     if (!foundUser) {
       return null
@@ -74,7 +73,7 @@ export class UserRepository {
     return { refreshToken: foundUser.refreshToken }
   }
   async findByLoginOrEmail(loginOrEmail: string): Promise<UserType | null> {
-    const foundUser: UserType | null = await UserModal.findOne({ $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }] })
+    const foundUser: UserType | null = await UserModel.findOne({ $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }] })
 
     if (!foundUser) {
       return null
@@ -83,7 +82,7 @@ export class UserRepository {
     return foundUser
   }
   async findByConfirmationCode(code: string): Promise<UserType | null> {
-    const foundUser: UserType | null = await UserModal.findOne({ 'emailConfirmation.confirmationCode': code })
+    const foundUser: UserType | null = await UserModel.findOne({ 'emailConfirmation.confirmationCode': code })
 
     if (!foundUser) {
       return null
@@ -92,7 +91,7 @@ export class UserRepository {
     return foundUser
   }
   async findByRecoveryCode(code: string): Promise<UserType | null> {
-    const foundUser: UserType | null = await UserModal.findOne({ 'passwordRecovery.recoveryCode': code })
+    const foundUser: UserType | null = await UserModel.findOne({ 'passwordRecovery.recoveryCode': code })
 
     if (!foundUser) {
       return null
@@ -101,17 +100,17 @@ export class UserRepository {
     return foundUser
   }
   async createdUser(createdUser: UserType): Promise<UserViewModel> {
-    await UserModal.create(createdUser)
+    await UserModel.create(createdUser)
 
     return this._getUserViewModel(createdUser)
   }
   async deleteUserById(id: string): Promise<boolean> {
-    const { deletedCount } = await UserModal.deleteOne({ id })
+    const { deletedCount } = await UserModel.deleteOne({ id })
 
     return deletedCount === 1
   }
   async updateConfirmationByCode(code: string): Promise<boolean> {
-    const result = await UserModal.updateOne({ 'emailConfirmation.confirmationCode': code }, {
+    const result = await UserModel.updateOne({ 'emailConfirmation.confirmationCode': code }, {
       $set: {
         'emailConfirmation.isConfirmed': true
       }
@@ -120,7 +119,7 @@ export class UserRepository {
     return result.modifiedCount === 1
   }
   async updateConfirmationCodeByEmail(email: string, code: string): Promise<boolean> {
-    const result = await UserModal.updateOne({ 'accountData.email': email }, {
+    const result = await UserModel.updateOne({ 'accountData.email': email }, {
       $set: {
         'emailConfirmation.confirmationCode': code
       }
@@ -129,7 +128,7 @@ export class UserRepository {
     return result.modifiedCount === 1
   }
   async updateRecoveryCodeByEmail(email: string, recoveryCode: string, expirationDate: Date): Promise<boolean> {
-    const result = await UserModal.updateOne({ 'accountData.email': email }, {
+    const result = await UserModel.updateOne({ 'accountData.email': email }, {
       $set: {
         'passwordRecovery.recoveryCode': recoveryCode,
         'passwordRecovery.expirationDate': expirationDate,
@@ -140,7 +139,7 @@ export class UserRepository {
     return result.modifiedCount === 1
   }
   async updatedUserPassword(passwordHash: string, recoveryCode: string): Promise<boolean> {
-    const result = await UserModal.updateOne({ 'passwordRecovery.recoveryCode': recoveryCode }, {
+    const result = await UserModel.updateOne({ 'passwordRecovery.recoveryCode': recoveryCode }, {
       $set: {
         'accountData.passwordHash': passwordHash,
         'passwordRecovery.isRecovered': true,
@@ -150,7 +149,7 @@ export class UserRepository {
     return result.modifiedCount === 1
   }
   async updateRefreshTokenByUserId(userId: string, refreshToken: string): Promise<boolean> {
-    const result = await UserModal.updateOne({ 'id': userId }, {
+    const result = await UserModel.updateOne({ 'id': userId }, {
       $set: {
         refreshToken,
       }

@@ -1,9 +1,9 @@
-import { sessionCollection } from '../db'
+import { SessionModel } from '../../repositories/db-mongoose'
 import { SessionType } from '../../types'
 
-export class sessionRepository {
+export class SessionRepository {
   async findSession(ip: string, url: string, deviceTitle: string): Promise<SessionType | null> {
-    const foundSession: SessionType | null = await sessionCollection.findOne({
+    const foundSession: SessionType | null = await SessionModel.findOne({
       $and: [{ ip }, { url }, { deviceTitle }]
     })
 
@@ -14,21 +14,21 @@ export class sessionRepository {
     return foundSession
   }
   async createdSession(createdSession: SessionType): Promise<SessionType> {
-    await sessionCollection.insertOne(createdSession)
+    await SessionModel.create(createdSession)
 
     return createdSession
   }
   async increaseAttempt(id: string): Promise<SessionType | null> {
-    const document = await sessionCollection.findOneAndUpdate({ id }, { $inc: { attempt: 1 } }, { returnDocument: "after", })
+    const document = await SessionModel.findOneAndUpdate({ id }, { $inc: { attempt: 1 } }, { returnDocument: "after", })
 
     if (!document) {
       return null
     }
 
-    return document.value   
+    return null
   }
   async resetAttempt(id: string): Promise<boolean> {
-    const { matchedCount } = await sessionCollection.updateOne({ id }, {
+    const { matchedCount } = await SessionModel.updateOne({ id }, {
       $set: { attempt: 1, issuedAtt: new Date().toISOString() },
     })
 

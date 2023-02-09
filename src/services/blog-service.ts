@@ -1,5 +1,5 @@
 import { trim } from 'lodash'
-import { BlogRepository } from '../repositories/blog/blog-db-repository'
+import { BlogRepository } from '../repositories/blog/blog-db-mongoose-repository'
 
 import {
   BlogType,

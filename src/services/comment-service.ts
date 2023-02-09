@@ -1,5 +1,5 @@
 import { trim } from 'lodash'
-import { CommentRepository } from '../repositories/comment/comment-db-repository'
+import { CommentRepository } from '../repositories/comment/comment-db-mongoose-repository'
 
 import {
   CommentType,
