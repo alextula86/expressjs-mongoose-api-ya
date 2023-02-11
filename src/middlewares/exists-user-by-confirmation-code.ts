@@ -1,15 +1,14 @@
 import { NextFunction, Response } from 'express'
-import { UserRepository } from '../repositories/user/user-db-mongoose-repository'
-import { AuthService, UserService } from '../services'
+
+import { container } from '../composition-roots'
+import { AuthService } from '../services'
+
 import { usersErrorsValidator } from '../errors'
 import { HTTPStatuses } from '../types'
-
 import { RequestWithBody, ConfirmationCodeAuthService, ErrorsMessageType } from '../types'
 
 export const existsUserByConfirmationCode = async (req: RequestWithBody<ConfirmationCodeAuthService>, res: Response<ErrorsMessageType>, next: NextFunction) => {
-  const userRepository = new UserRepository()
-  const userService = new UserService(userRepository)
-  const authService = new AuthService(userRepository, userService)
+  const authService = container.resolve(AuthService)
 
   // Ищем пользователя по коду подтверждения email
   const user = await authService.checkExistsConfirmationCode(req.body.code)

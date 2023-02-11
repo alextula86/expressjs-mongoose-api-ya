@@ -1,6 +1,8 @@
-import { DeviceModel } from '../../repositories/db-mongoose'
+import { injectable } from 'inversify'
+import { DeviceModel } from '../db-mongoose'
 import { DeviceType, DeviceViewModel } from '../../types'
 
+@injectable()
 export class DeviceRepository {
   async findAllDevices(userId: string): Promise<DeviceViewModel[]> {
     const devices: DeviceType[] = await DeviceModel.find({ userId }).lean()

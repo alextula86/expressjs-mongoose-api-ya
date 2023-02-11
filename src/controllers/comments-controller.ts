@@ -1,4 +1,5 @@
 import { Response } from 'express'
+import { injectable } from 'inversify'
 import { isEmpty } from 'lodash'
 import { CommentService } from '../services'
 
@@ -15,6 +16,7 @@ import {
   HTTPStatuses,
 } from '../types'
 
+@injectable()
 export class CommentsController {
   constructor(
     protected commentService: CommentService,

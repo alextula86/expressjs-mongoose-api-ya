@@ -1,14 +1,9 @@
 import { NextFunction, Request, Response } from 'express'
 import * as dotenv from 'dotenv'
 dotenv.config()
-import { UserRepository } from '../repositories/user/user-db-mongoose-repository'
-import { DeviceRepository } from '../repositories/device/device-db-repository'
 
-import {
-    UserService,
-    AuthService,
-    DeviceService,
-} from '../services'
+import { container } from '../composition-roots'
+import { UserService, AuthService, DeviceService } from '../services'
 
 import { HTTPStatuses } from '../types'
 
@@ -17,11 +12,9 @@ export const authRefreshTokenMiddleware = async (req: Request & any, res: Respon
     return res.status(HTTPStatuses.UNAUTHORIZED401).send()
   }
 
-  const userRepository = new UserRepository()
-  const userService = new UserService(userRepository)
-  const deviceRepository = new DeviceRepository()
-  const deviceService = new DeviceService(deviceRepository)
-  const authService = new AuthService(userRepository, userService)
+  const userService = container.resolve(UserService)
+  const deviceService = container.resolve(DeviceService)
+  const authService = container.resolve(AuthService)
 
   // Верифицируем refresh токен и получаем идентификатор пользователя
   const refreshTokenData = await authService.checkAuthRefreshToken(req.cookies.refreshToken)

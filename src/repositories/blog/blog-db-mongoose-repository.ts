@@ -1,4 +1,5 @@
-import { BlogModel, PostModel } from '../../repositories/db-mongoose'
+import { injectable } from 'inversify'
+import { BlogModel, PostModel } from '../db-mongoose'
 
 import {
   BlogType,
@@ -11,6 +12,7 @@ import {
   SortDirection,
 } from '../../types'
 
+@injectable()
 export class BlogRepository {
   async findAllBlogs({
     searchNameTerm,
@@ -29,7 +31,7 @@ export class BlogRepository {
       filter.name = { $regex: searchNameTerm, $options: 'i' }
     }
 
-    const totalCount = await BlogModel.count(filter)
+    const totalCount = await BlogModel.countDocuments(filter)
     const pagesCount = Math.ceil(totalCount / size)
     const skip = (number - 1) * size
 
@@ -74,7 +76,7 @@ export class BlogRepository {
       filter.title = { $regex: searchNameTerm, $options: 'i' }
     }
 
-    const totalCount = await PostModel.count(filter)
+    const totalCount = await PostModel.countDocuments(filter)
     const pagesCount = Math.ceil(totalCount / size)
     const skip = (number - 1) * size
 

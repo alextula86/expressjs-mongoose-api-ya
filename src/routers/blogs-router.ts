@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { blogsController } from '../composition-roots'
+import { BlogsController } from '../controllers'
+import { container } from '../composition-roots'
 import {
   authBasicMiddleware,
   nameBlogValidation,
@@ -28,6 +29,8 @@ const middlewaresPost = [
   contentPostValidation,
   inputValidationMiddleware
 ]
+
+const blogsController = container.resolve(BlogsController)
 
 blogsRouter
   .get('/', blogsController.getBlogs.bind(blogsController))

@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { userController } from '../composition-roots'
+import { UserController } from '../controllers'
+import { container } from '../composition-roots'
 import {
   authBasicMiddleware,
   loginUserValidation,
@@ -17,6 +18,8 @@ const middlewares = [
   passwordUserValidation,
   inputValidationMiddleware,
 ]
+
+const userController = container.resolve(UserController)
 
 usersRouter
   .get('/', authBasicMiddleware, userController.getUsers.bind(userController))

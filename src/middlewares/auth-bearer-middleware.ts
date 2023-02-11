@@ -1,8 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import * as dotenv from 'dotenv'
 dotenv.config()
+
+import { container } from '../composition-roots'
 import { UserService } from '../services'
-import { UserRepository } from '../repositories/user/user-db-mongoose-repository'
+
 import { jwtService } from '../application'
 import { HTTPStatuses } from '../types'
 
@@ -19,8 +21,7 @@ export const authBearerMiddleware = async (req: Request & any, res: Response, ne
     return res.status(HTTPStatuses.UNAUTHORIZED401).send()
   }
 
-  const userRepository = new UserRepository()
-  const userService = new UserService(userRepository)
+  const userService = container.resolve(UserService)
 
   const user = await userService.findUserById(userId)
 

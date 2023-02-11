@@ -1,11 +1,16 @@
 import { NextFunction, Request, Response } from 'express'
 import * as dotenv from 'dotenv'
 dotenv.config()
+
+import { container } from '../composition-roots'
 import { UserService, AuthService } from '../services'
-import { UserRepository } from '../repositories/user/user-db-mongoose-repository'
+
 import { jwtService } from '../application'
 
 export const getUserByBearerOrRefreshTokenMiddleware = async (req: Request & any, res: Response, next: NextFunction) => {
+  const userService = container.resolve(UserService) 
+  const authService = container.resolve(AuthService)
+
   if (req.headers.authorization) {
     const [authType, authToken] = req.headers.authorization.split(' ')
     const userId = await jwtService.getUserIdByAccessToken(authToken)
@@ -13,10 +18,7 @@ export const getUserByBearerOrRefreshTokenMiddleware = async (req: Request & any
     if (authType !== 'Bearer' || !userId) {
       return next()
     }
-
-    const userRepository = new UserRepository()
-    const userService = new UserService(userRepository)
-  
+     
     const user = await userService.findUserById(userId)
 
     if (!user) {
@@ -28,10 +30,6 @@ export const getUserByBearerOrRefreshTokenMiddleware = async (req: Request & any
   }
   
   if (req.cookies.refreshToken) {
-    const userRepository = new UserRepository()
-    const userService = new UserService(userRepository)
-    const authService = new AuthService(userRepository, userService)
-
     // Верифицируем refresh токен и получаем идентификатор пользователя
     const refreshTokenData = await authService.checkAuthRefreshToken(req.cookies.refreshToken)
 

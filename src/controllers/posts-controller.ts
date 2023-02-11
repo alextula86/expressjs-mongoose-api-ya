@@ -1,4 +1,5 @@
 import { Response } from 'express'
+import { injectable } from 'inversify'
 import { isEmpty } from 'lodash'
 import { BlogService, PostService, CommentService } from '../services'
 
@@ -24,6 +25,7 @@ import {
   ErrorsMessageType,
 } from '../types'
 
+@injectable()
 export class PostsController {
   constructor(
     protected postService: PostService,

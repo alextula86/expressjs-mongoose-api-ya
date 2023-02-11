@@ -43,15 +43,15 @@ const emailConfirmationSchema = new Schema({
 
   isConfirmed: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 })
 
 const passwordRecoverySchema = new Schema({
   recoveryCode: {
     type: String,
-    required: [true, 'The confirmationCode field is required'],
     trim: true,
+    default: '',
   },
 
   expirationDate: {
@@ -61,7 +61,7 @@ const passwordRecoverySchema = new Schema({
 
   isRecovered: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 })
 

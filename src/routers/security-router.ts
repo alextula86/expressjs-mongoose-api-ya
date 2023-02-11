@@ -1,8 +1,11 @@
 import { Router } from 'express'
-import { deviceController } from '../composition-roots'
 import { authRefreshTokenMiddleware } from '../middlewares'
+import { DeviceController } from '../controllers'
+import { container } from '../composition-roots'
 
 export const securityRouter = Router()
+
+const deviceController = container.resolve(DeviceController)
 
 securityRouter
   // Возвращает все устройства с активными сеансами для текущего пользователя

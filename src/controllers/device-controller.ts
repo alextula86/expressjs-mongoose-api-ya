@@ -1,4 +1,5 @@
 import { Response, Request } from 'express'
+import { injectable } from 'inversify'
 import { isEmpty } from 'lodash'
 import { DeviceService } from '../services'
 
@@ -8,6 +9,7 @@ import {
   HTTPStatuses,
 } from '../types'
 
+@injectable()
 export class DeviceController {
   constructor(protected deviceService: DeviceService) {}
 

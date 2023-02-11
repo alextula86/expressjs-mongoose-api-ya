@@ -1,4 +1,5 @@
 import { Response } from 'express'
+import { injectable, inject } from 'inversify'
 import { UserService } from '../services'
 
 import {
@@ -14,8 +15,9 @@ import {
   ErrorsMessageType,
 } from '../types'
 
+@injectable()
 export class UserController {
-  constructor(protected userService: UserService) {}
+  constructor(@inject(UserService) protected userService: UserService) {}
   async getUsers(req: RequestWithQuery<QueryUserModel>, res: Response<ResponseViewModelDetail<UserViewModel>>) {
     const allUsers = await this.userService.findAllUsers({
       searchLoginTerm: req.query.searchLoginTerm,

@@ -1,3 +1,4 @@
+import { injectable, inject } from 'inversify'
 import { trim } from 'lodash'
 import bcrypt from 'bcrypt'
 import { UserRepository } from '../repositories/user/user-db-mongoose-repository'
@@ -13,8 +14,9 @@ import {
   SortDirection,
 } from '../types'
 
+@injectable()
 export class UserService {
-  constructor(protected userRepository: UserRepository) {}
+  constructor(@inject(UserRepository) protected userRepository: UserRepository) {}
   async findAllUsers({
     searchLoginTerm,
     searchEmailTerm,

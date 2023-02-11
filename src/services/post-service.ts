@@ -1,3 +1,4 @@
+import { injectable, inject } from 'inversify'
 import { trim } from 'lodash'
 import { PostRepository } from '../repositories/post/post-db-mongoose-repository'
 
@@ -11,8 +12,9 @@ import {
   SortDirection,
 } from '../types'
 
+@injectable()
 export class PostService {
-  constructor(protected postRepository: PostRepository){}
+  constructor(@inject(PostRepository) protected postRepository: PostRepository){}
   async findAllPosts({
     searchNameTerm,
     pageNumber,

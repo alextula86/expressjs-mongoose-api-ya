@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { postsController } from '../composition-roots'
+import { PostsController } from '../controllers'
+import { container } from '../composition-roots'
 
 import {
   authBasicMiddleware,
@@ -29,6 +30,8 @@ const middlewaresComment = [
   contentCommentValidation,
   inputValidationMiddleware
 ]
+
+const postsController = container.resolve(PostsController)
 
 postsRouter
   .get('/', postsController.getPosts.bind(postsController))

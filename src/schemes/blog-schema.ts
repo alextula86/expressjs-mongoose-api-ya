@@ -1,7 +1,8 @@
 import mongoose from 'mongoose'
 const { Schema } = mongoose
+import { BlogType } from '../types'
 
-export const blogSchema = new Schema({
+export const blogSchema = new Schema<BlogType>({
   id: {
     type: String,
     required: [true, 'The id field is required'],

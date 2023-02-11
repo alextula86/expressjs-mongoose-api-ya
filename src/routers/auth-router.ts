@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { authController } from '../composition-roots'
+import { AuthController } from '../controllers'
+import { container } from '../composition-roots'
 import {
   authBearerMiddleware,
   authRefreshTokenMiddleware,
@@ -66,6 +67,8 @@ const middlewaresConfirmPasswordModel = [
   inputValidationMiddleware,
   existsUserByRecoveryCode,
 ]
+
+const authController = container.resolve(AuthController)
 
 authRouter
   // Получение данных о пользователе

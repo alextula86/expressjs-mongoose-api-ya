@@ -1,3 +1,4 @@
+import { injectable, inject } from 'inversify'
 import { trim } from 'lodash'
 import { CommentRepository } from '../repositories/comment/comment-db-mongoose-repository'
 
@@ -13,8 +14,9 @@ import {
 
  } from '../types'
 
+ @injectable()
 export class CommentService {
-  constructor(protected commentRepository: CommentRepository) {}
+  constructor(@inject(CommentRepository) protected commentRepository: CommentRepository) {}
   async findAllCommentsByPostId(postId: string, {
     pageNumber,
     pageSize,

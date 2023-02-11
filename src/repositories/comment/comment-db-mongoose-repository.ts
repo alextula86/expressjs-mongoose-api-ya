@@ -1,3 +1,4 @@
+import { injectable } from 'inversify'
 import { CommentModel } from '../db-mongoose'
 
 import {
@@ -10,6 +11,7 @@ import {
   SortDirection,
 } from '../../types'
 
+@injectable()
 export class CommentRepository {
   async findAllCommentsByPostId(postId: string, {
     pageNumber,

@@ -1,8 +1,10 @@
+import { injectable, inject } from 'inversify'
 import { DeviceRepository } from '../repositories/device/device-db-mongoose-repository'
 import { DeviceType, DeviceViewModel, CreaetDeviceService } from '../types'
 
+@injectable()
 export class DeviceService {
-  constructor(protected deviceRepository: DeviceRepository) {}
+  constructor(@inject(DeviceRepository) protected deviceRepository: DeviceRepository) {}
 
   async findAllDevices(userId: string): Promise<DeviceViewModel[]> {
     const foundAllDevices = await this.deviceRepository.findAllDevices(userId)

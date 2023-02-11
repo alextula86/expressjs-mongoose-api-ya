@@ -1,4 +1,5 @@
-import { PostModel } from '../../repositories/db-mongoose'
+import { injectable } from 'inversify'
+import { PostModel } from '../db-mongoose'
 
 import {
   PostType,
@@ -8,6 +9,7 @@ import {
   SortDirection,
 } from '../../types'
 
+@injectable()
 export class PostRepository {
   async findAllPosts({
     searchNameTerm,
@@ -26,7 +28,7 @@ export class PostRepository {
       filter.title = { $regex: searchNameTerm, $options: 'i' }
     }
 
-    const totalCount = await PostModel.count(filter)
+    const totalCount = await PostModel.countDocuments(filter)
     const pagesCount = Math.ceil(totalCount / size)
     const skip = (number - 1) * size
 

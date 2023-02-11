@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { HTTPStatuses } from '../types'
 
-import { testingRepository } from '../repositories/testing/testing-db-repository'
+import { testingRepository } from '../repositories/testing/testing-db-mongoose-repository'
 
 export const testingRouter = Router()
 

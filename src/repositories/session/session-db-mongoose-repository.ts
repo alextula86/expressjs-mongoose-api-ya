@@ -1,4 +1,4 @@
-import { SessionModel } from '../../repositories/db-mongoose'
+import { SessionModel } from '../db-mongoose'
 import { SessionType } from '../../types'
 
 export class SessionRepository {

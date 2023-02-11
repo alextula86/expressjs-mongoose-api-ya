@@ -1,3 +1,4 @@
+import { injectable } from 'inversify'
 import { isEmpty } from 'lodash'
 import { UserModel } from '../db-mongoose'
 
@@ -10,6 +11,7 @@ import {
   SortDirection,
 } from '../../types'
 
+@injectable()
 export class UserRepository {
   async findAllUsers({
     searchLoginTerm,
@@ -35,7 +37,7 @@ export class UserRepository {
 
     const filter = !isEmpty(query) ? { $or: query } : {}
  
-    const totalCount = await UserModel.count(filter)
+    const totalCount = await UserModel.countDocuments(filter)
     const pagesCount = Math.ceil(totalCount / size)
     const skip = (number - 1) * size
 

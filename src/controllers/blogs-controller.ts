@@ -1,4 +1,5 @@
 import { Response } from 'express'
+import { injectable } from 'inversify'
 import { BlogService } from '../services/blog-service'
 
 import {
@@ -21,9 +22,11 @@ import {
   ErrorsMessageType,
 } from '../types'
 
+@injectable()
 export class BlogsController {
   constructor(protected blogService: BlogService) {}
   async getBlogs(req: RequestWithQuery<QueryBlogModel>, res: Response<ResponseViewModelDetail<BlogViewModel>>) {
+    
     const allBlogs = await this.blogService.findAllBlogs({
       searchNameTerm: req.query.searchNameTerm,
       pageNumber: req.query.pageNumber, 

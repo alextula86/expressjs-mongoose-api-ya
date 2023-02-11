@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { commentsController } from '../composition-roots'
+import { CommentsController } from '../controllers'
+import { container } from '../composition-roots'
 import {
   authBearerMiddleware,
   getUserByBearerOrRefreshTokenMiddleware,
@@ -22,6 +23,7 @@ const middlewaresLikeStatus = [
   inputValidationMiddleware,
 ]
 
+const commentsController = container.resolve(CommentsController)
 
 commentsRouter
   .get('/:id', getUserByBearerOrRefreshTokenMiddleware, commentsController.getComment.bind(commentsController))  

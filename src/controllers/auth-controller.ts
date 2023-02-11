@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { injectable } from 'inversify'
 import { UserService, AuthService, DeviceService } from '../services'
 
 import {
@@ -17,6 +18,7 @@ import {
 import { jwtService } from '../application'
 import { getNextStrId } from '../utils'
 
+@injectable()
 export class AuthController {
   constructor(
     protected authService: AuthService,

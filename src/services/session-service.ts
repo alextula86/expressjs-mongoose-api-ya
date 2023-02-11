@@ -1,9 +1,10 @@
+import { injectable, inject } from 'inversify'
 import { SessionRepository } from '../repositories/session/session-db-mongoose-repository'
-import { getNextStrId } from '../utils'
 import { SessionType, CreaetSessionService } from '../types'
 
+@injectable()
 export class SessionService {
-  constructor(protected sessionRepository: SessionRepository) {}
+  constructor(@inject(SessionRepository) protected sessionRepository: SessionRepository) {}
 
   async findSession(ip: string, url: string, deviceTitle: string): Promise<SessionType | null> {
     const foundSession = await this.sessionRepository.findSession(ip, url, deviceTitle)

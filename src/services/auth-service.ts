@@ -1,3 +1,4 @@
+import { injectable, inject } from 'inversify'
 import { trim } from 'lodash'
 import bcrypt from 'bcrypt'
 import { add } from 'date-fns'
@@ -13,8 +14,12 @@ import {
   CreaetUserService,
 } from '../types'
 
+@injectable()
 export class AuthService {
-  constructor(protected userRepository: UserRepository, protected userService: UserService) {}
+  constructor(
+    @inject(UserRepository) protected userRepository: UserRepository, 
+    @inject(UserService) protected userService: UserService
+  ) {}
   // Регистрация пользователя
   async registerUser({
     login,
