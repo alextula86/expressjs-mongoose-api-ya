@@ -18,6 +18,8 @@ if (!mongoUri) {
   throw new Error('Url doesnt found')
 }
 
+mongoose.set('strictQuery', true)
+
 export const UserModel = mongoose.model('users', userSchema)
 export const BlogModel = mongoose.model('blogs', blogSchema)
 export const PostModel = mongoose.model('posts', postSchema)
