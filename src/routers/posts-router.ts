@@ -18,7 +18,7 @@ import {
 export const postsRouter = Router()
 
 const middlewares = [
-  authBearerMiddleware,
+  authBasicMiddleware,
   titlePostValidation,
   shortPostDescriptionValidation,
   contentPostValidation,
