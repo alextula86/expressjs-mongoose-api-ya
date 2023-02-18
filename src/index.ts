@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
-import { runDb } from './repositories/db'
+import { runDb } from './repositories/db-mongoose'
 import { blogsRouter } from './routers/blogs-router'
 import { postsRouter } from './routers/posts-router'
 import { commentsRouter } from './routers/comments-router'
