@@ -1,6 +1,6 @@
 import { injectable } from 'inversify'
 import { isEmpty } from 'lodash'
-import { UserModel } from '../db-mongoose'
+import { UserModel } from './db-mongoose'
 
 import {
   UserType,
@@ -9,7 +9,7 @@ import {
   QueryUserModel,
   ResponseViewModelDetail,
   SortDirection,
-} from '../../types'
+} from '../types'
 
 @injectable()
 export class UserRepository {

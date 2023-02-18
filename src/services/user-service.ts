@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify'
 import { trim } from 'lodash'
 import bcrypt from 'bcrypt'
-import { UserRepository } from '../repositories/user/user-db-mongoose-repository'
+import { UserRepository } from '../repositories'
 import { generateUUID } from '../utils'
 
 import {

@@ -5,8 +5,8 @@ import {
   UserModel,
   DeviceModel,
   SessionModel,
-} from '../db-mongoose'
-import { RepositoryTestingType } from '../../types'
+} from './db-mongoose'
+import { RepositoryTestingType } from '../types'
 
 export const testingRepository: RepositoryTestingType = {
   deleteAll: async () => {

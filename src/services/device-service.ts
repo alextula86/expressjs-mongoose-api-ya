@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { DeviceRepository } from '../repositories/device/device-db-mongoose-repository'
+import { DeviceRepository } from '../repositories'
 import { DeviceType, DeviceViewModel, CreaetDeviceService } from '../types'
 
 @injectable()

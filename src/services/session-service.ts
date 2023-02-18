@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify'
-import { SessionRepository } from '../repositories/session/session-db-mongoose-repository'
+import { SessionRepository } from '../repositories'
 import { SessionType, CreaetSessionService } from '../types'
 
 @injectable()

@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { PostModel } from '../db-mongoose'
+import { PostModel } from './db-mongoose'
 
 import {
   PostType,
@@ -9,7 +9,7 @@ import {
   ResponseViewModelDetail,
   LikeStatuses,
   SortDirection,
-} from '../../types'
+} from '../types'
 
 @injectable()
 export class PostRepository {

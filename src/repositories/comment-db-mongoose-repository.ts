@@ -1,5 +1,5 @@
 import { injectable } from 'inversify'
-import { CommentModel } from '../db-mongoose'
+import { CommentModel } from './db-mongoose'
 
 import {
   CommentType,
@@ -9,7 +9,7 @@ import {
   LikeStatusCommentType,
   LikeStatuses,
   SortDirection,
-} from '../../types'
+} from '../types'
 
 @injectable()
 export class CommentRepository {

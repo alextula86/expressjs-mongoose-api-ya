@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
 import { trim } from 'lodash'
-import { PostRepository } from '../repositories/post/post-db-mongoose-repository'
+import { PostRepository } from '../repositories'
 
 import {
   PostType,

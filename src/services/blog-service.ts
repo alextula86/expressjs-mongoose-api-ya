@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { injectable, inject } from 'inversify'
 import { trim } from 'lodash'
-import { BlogRepository } from '../repositories/blog/blog-db-mongoose-repository'
+import { BlogRepository } from '../repositories'
 
 import {
   BlogType,

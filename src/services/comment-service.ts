@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify'
 import { trim } from 'lodash'
-import { CommentRepository } from '../repositories/comment/comment-db-mongoose-repository'
+import { CommentRepository } from '../repositories'
 
 import {
   CommentType,

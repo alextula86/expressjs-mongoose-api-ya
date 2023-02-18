@@ -1,6 +1,6 @@
 import { injectable } from 'inversify'
-import { SessionModel } from '../db-mongoose'
-import { SessionType } from '../../types'
+import { SessionModel } from './db-mongoose'
+import { SessionType } from '../types'
 
 @injectable()
 export class SessionRepository {
