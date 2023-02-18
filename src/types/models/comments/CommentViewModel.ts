@@ -11,7 +11,6 @@ type LikesInfo = {
   dislikesCount: number
   myStatus: LikeStatuses
   likes?: LikeStatusCommentType[]
-  dislikes?: LikeStatusCommentType[]
 }
 
 export type CommentViewModel = {

@@ -1,7 +1,9 @@
 import mongoose from 'mongoose'
+import { LikeStatuses, CommentType, LikeStatusCommentType } from '../types'
+
 const { Schema } = mongoose
 
-const likeStatusCommentSchema = new Schema({
+const likeStatusCommentSchema = new Schema<LikeStatusCommentType>({
   id: {
     type: String,
     required: [true, 'The id field is required'],
@@ -24,11 +26,10 @@ const likeStatusCommentSchema = new Schema({
   likeStatus: {
     type: String,
     enum: {
-      values: ['None', 'Like', 'Dislike'],
+      values: [LikeStatuses.NONE, LikeStatuses.LIKE, LikeStatuses.DISLIKE],
       message: '{VALUE} is not supported',
     },
-    required: [true, 'The likeStatus field is required'],
-    default: 'None',
+    default: LikeStatuses.NONE,
   },
 
   createdAt: {
@@ -37,7 +38,7 @@ const likeStatusCommentSchema = new Schema({
   },
 });
 
-export const commentSchema = new Schema({
+export const commentSchema = new Schema<CommentType>({
   id: {
     type: String,
     required: [true, 'The id field is required'],
@@ -54,11 +55,6 @@ export const commentSchema = new Schema({
   },
 
   likes: {
-    type: [likeStatusCommentSchema],
-    default: [],
-  },
-
-  dislikes: {
     type: [likeStatusCommentSchema],
     default: [],
   },

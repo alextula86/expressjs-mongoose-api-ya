@@ -12,7 +12,7 @@ export const сountRequestsMiddleware = async (req: Request & any, res: Response
 
   const limitSecondsRate = 10
   const maxAttemps = 5
-    
+  
   const sessionService = container.resolve(SessionService)
 
   const foundSession = await sessionService.findSession(ip, url, deviceTitle)

@@ -52,14 +52,15 @@ export class CommentsController {
 
     res.status(HTTPStatuses.NOCONTENT204).send()
   }
-  async updateLikeStatusToComment(req: RequestWithParamsAndBody<URIParamsCommentModel, AddLikeToCommentModel> & UserRequestModel & any, res: Response<boolean>) {
+  async updateCommentLikeStatus(req: RequestWithParamsAndBody<URIParamsCommentModel, AddLikeToCommentModel> & UserRequestModel & any, res: Response<boolean>) {
+    // Получить сначала юзера!!!!
     const commentById = await this.commentService.findCommentById(req.params.id)
 
     if (isEmpty(commentById)) {
       return res.status(HTTPStatuses.NOTFOUND404).send()
     }
-
-    const isLikeUpdated = await this.commentService.updateLikeStatusToComment(commentById.id, {
+    
+    const isLikeUpdated = await this.commentService.updateCommentLikeStatus(commentById.id, {
       userId: req.user!.userId,
       userLogin: req.user!.login,
       likeStatus: req.body.likeStatus,
@@ -101,8 +102,7 @@ export class CommentsController {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
         myStatus,
-        // likes: dbComment.likes,
-        // dislikes: dbComment.dislikes,
+        likes: dbComment.likes,
       },      
     }
   } 
@@ -111,19 +111,12 @@ export class CommentsController {
       return LikeStatuses.NONE
     }
 
-    const currentLike = dbComment.likes.find(item => item.userId === userId)
+    const currentLike1 = dbComment.likes.find(item => item.userId === userId)
 
-    if (currentLike) {
-      return currentLike.likeStatus
+    if (!currentLike1) {
+      return LikeStatuses.NONE
     }
 
-    const currentDislike = dbComment.dislikes.find(item => item.userId === userId)
-
-    if (currentDislike) {
-      return currentDislike.likeStatus
-    }
-
-    return LikeStatuses.NONE
-    
+    return currentLike1.likeStatus
   }
 }

@@ -20,7 +20,7 @@ export class BlogRepository {
     pageSize,
     sortBy,
     sortDirection,
-  }: QueryBlogModel): Promise<ResponseViewModelDetail<BlogViewModel>> {
+  }: QueryBlogModel): Promise<ResponseViewModelDetail<BlogType>> {
     const number = pageNumber ? Number(pageNumber) : 1
     const size = pageSize ? Number(pageSize) : 10
     
@@ -42,22 +42,22 @@ export class BlogRepository {
       .limit(size)
       .lean()
 
-    return this._getBlogsViewModelDetail({
+    return {
       items: blogs,
       totalCount,
       pagesCount,
       page: number,
       pageSize: size,
-    })
+    }
   }
-  async findBlogById(id: string): Promise<BlogViewModel | null> {
+  async findBlogById(id: string): Promise<BlogType | null> {
     const foundBlog: BlogType | null = await BlogModel.findOne({ id })
 
     if (!foundBlog) {
       return null
     }
 
-    return this._getBlogViewModel(foundBlog)
+    return foundBlog
   }
   async findPostsByBlogId(blogId: string, {
     searchNameTerm,
@@ -65,7 +65,7 @@ export class BlogRepository {
     pageSize,
     sortBy,
     sortDirection,
-  }: QueryPostModel): Promise<ResponseViewModelDetail<PostViewModel>> {
+  }: QueryPostModel): Promise<ResponseViewModelDetail<PostType>> {
     const number = pageNumber ? Number(pageNumber) : 1
     const size = pageSize ? Number(pageSize) : 10
 
@@ -87,23 +87,23 @@ export class BlogRepository {
       .limit(size)
       .lean()
 
-    return this._getPostsViewModelDetail({
+    return {
       items: posts,
       totalCount,
       pagesCount,
       page: number,
       pageSize: size,
-    })
+    }
   }
-  async createdBlog(createdBlog: BlogType): Promise<BlogViewModel> {
+  async createdBlog(createdBlog: BlogType): Promise<BlogType> {
     await BlogModel.create(createdBlog)
 
-    return this._getBlogViewModel(createdBlog)
+    return createdBlog
   }
-  async createdPostByBlogId(createdPost: PostType): Promise<PostViewModel> {
+  async createdPostByBlogId(createdPost: PostType): Promise<PostType> {
     await PostModel.create(createdPost)
 
-    return this._getPostViewModel(createdPost)
+    return createdPost
   }
   async updateBlog({id, name, description, websiteUrl }: BlogType): Promise<boolean> {
     const { matchedCount } = await BlogModel.updateOne({ id }, {
@@ -120,69 +120,5 @@ export class BlogRepository {
     const { deletedCount } = await BlogModel.deleteOne({ id })
 
     return deletedCount === 1
-  }
-  _getBlogViewModel(dbBlog: BlogType): BlogViewModel {
-    return {
-      id: dbBlog.id,
-      name: dbBlog.name,
-      description: dbBlog.description,
-      websiteUrl: dbBlog.websiteUrl,
-      createdAt: dbBlog.createdAt,
-    }
-  }
-  _getPostViewModel(dbPost: PostType): PostViewModel {
-    return {
-      id: dbPost.id,
-      title: dbPost.title,
-      shortDescription: dbPost.shortDescription,
-      content: dbPost.content,
-      blogId: dbPost.blogId,
-      blogName: dbPost.blogName,
-      createdAt: dbPost.createdAt,
-    }
-  }
-  _getBlogsViewModelDetail({
-    items,
-    totalCount,
-    pagesCount,
-    page,
-    pageSize,
-  }: ResponseViewModelDetail<BlogType>): ResponseViewModelDetail<BlogViewModel> {
-    return {
-      pagesCount,
-      page,
-      pageSize,
-      totalCount,
-      items: items.map(item => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        websiteUrl: item.websiteUrl,
-        createdAt: item.createdAt,
-      })),
-    }
-  }
-  _getPostsViewModelDetail({
-    items,
-    totalCount,
-    pagesCount,
-    page,
-    pageSize,
-  }: ResponseViewModelDetail<PostType>): ResponseViewModelDetail<PostViewModel> {
-    return {
-      pagesCount,
-      page,
-      pageSize,
-      totalCount,
-      items: items.map(item => ({
-        id: item.id,
-        title: item.title,
-        shortDescription: item.shortDescription,
-        content: item.content,
-        blogId: item.blogId,
-        blogName: item.blogName,
-        createdAt: item.createdAt,
-      })),
-    }
   }
 }

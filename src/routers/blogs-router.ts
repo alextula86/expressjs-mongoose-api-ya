@@ -3,6 +3,8 @@ import { BlogsController } from '../controllers'
 import { container } from '../composition-roots'
 import {
   authBasicMiddleware,
+  authBearerMiddleware,
+  getUserByBearerOrRefreshTokenMiddleware,
   nameBlogValidation,
   descriptionBlogValidation,
   websiteUrlBlogValidation,
@@ -23,7 +25,7 @@ const middlewares = [
 ]
 
 const middlewaresPost = [
-  authBasicMiddleware,
+  authBearerMiddleware,
   titlePostValidation,
   shortPostDescriptionValidation,
   contentPostValidation,
@@ -35,7 +37,7 @@ const blogsController = container.resolve(BlogsController)
 blogsRouter
   .get('/', blogsController.getBlogs.bind(blogsController))
   .get('/:id', blogsController.getBlog.bind(blogsController))
-  .get('/:blogId/posts', blogsController.getPostsByBlogId.bind(blogsController))
+  .get('/:blogId/posts', getUserByBearerOrRefreshTokenMiddleware, blogsController.getPostsByBlogId.bind(blogsController))
   .post('/', middlewares, blogsController.createBlog.bind(blogsController))
   .post('/:blogId/posts', middlewaresPost, blogsController.createPostByBlogId.bind(blogsController))  
   .put('/:id', middlewares, blogsController.updateBlog.bind(blogsController))

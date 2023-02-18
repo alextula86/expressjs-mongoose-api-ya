@@ -63,15 +63,33 @@ export class CommentService {
 
     return isUpdatedComment
   }
-  async updateLikeStatusToComment(commentId: string, {
+  async updateCommentLikeStatus(commentId: string, {
     userId,
     userLogin,
     likeStatus,
   }: UpdateLikeToCommentService): Promise<boolean> {
-    const createdLikeStatus = new LikeStatusCommentType(userId, userLogin, likeStatus)
-    const isUpdatedComment = await this.commentRepository.updateLikeStatusToComment(commentId, createdLikeStatus)
+    // Определяем лайкал ли пользователь комментарий
+    const foundCommentLikeStatuses = await this.commentRepository.findCommentLikeStatusesByUserId(commentId, userId)
+    // Если пользователь не лайкал комментарий, то создаем инстанс лайк статуса и добавляем его для комментария
+    if (!foundCommentLikeStatuses) {
+      const createdLikeStatus = new LikeStatusCommentType(userId, userLogin, likeStatus)
+      const isAddCommentLikeStatus = await this.commentRepository.addCommentLikeStatus(commentId, createdLikeStatus)
 
-    return isUpdatedComment
+      return isAddCommentLikeStatus
+    }
+
+    // Определяем лайк статус пользователя
+    const likeStatusUserData = foundCommentLikeStatuses.likes.find(item => item.userId === userId)
+
+    // Если лайк статус пользователя равен переданому лайк статусу не производим обновление лайк статуса
+    if (likeStatusUserData && likeStatusUserData.likeStatus === likeStatus) {
+      return true
+    }
+
+    // Обновляем лайк статус пользователя
+    const isUpdatedCommentLikeStatuses = await this.commentRepository.updateCommentLikeStatusesByUserId(commentId, userId, likeStatus)
+
+    return isUpdatedCommentLikeStatuses
   }
   async deleteCommentById(id: string): Promise<boolean> {
     const isDeleteCommentById = await this.commentRepository.deleteCommentById(id)

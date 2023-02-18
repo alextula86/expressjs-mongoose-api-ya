@@ -1,19 +1,19 @@
 import { getNextStrId } from '../../utils'
 
-type UserDataType = {
+export type AccountDataType = {
   login: string
   email: string
   passwordHash: string
   createdAt: string
 }
 
-type EmailConfirmationType = {
+export type EmailConfirmationType = {
   confirmationCode: string
   expirationDate: Date
   isConfirmed: boolean
 }
 
-type PasswordRecoveryType = {
+export type PasswordRecoveryType = {
   recoveryCode: string
   expirationDate: Date
   isRecovered: boolean
@@ -22,7 +22,7 @@ type PasswordRecoveryType = {
 export class UserType {
   id: string
   constructor(
-    public accountData: UserDataType,
+    public accountData: AccountDataType,
     public emailConfirmation: EmailConfirmationType,
     public passwordRecovery: PasswordRecoveryType,
     public refreshToken: string,

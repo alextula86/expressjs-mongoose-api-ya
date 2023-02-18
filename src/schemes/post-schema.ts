@@ -1,7 +1,44 @@
 import mongoose from 'mongoose'
+import { LikeStatuses, PostType, LikeStatusPostType } from '../types'
+
 const { Schema } = mongoose
 
-export const postSchema = new Schema({
+const likeStatusPostSchema = new Schema<LikeStatusPostType>({
+  id: {
+    type: String,
+    required: [true, 'The id field is required'],
+  },
+
+  userId: {
+    type: String,
+    required: [true, 'The userId field is required'],
+  },
+
+  userLogin: {
+    type: String,
+    required: [true, 'The userLogin field is required'],
+    trim: true,
+    minLength: [3, 'The userLogin field must be at least 3, got {VALUE}'],
+    maxLength: [10, 'The userLogin field must be no more than 10, got {VALUE}'],
+    match: /^[a-zA-Z0-9_-]*$/,
+  },
+
+  likeStatus: {
+    type: String,
+    enum: {
+      values: [LikeStatuses.NONE, LikeStatuses.LIKE, LikeStatuses.DISLIKE],
+      message: '{VALUE} is not supported',
+    },
+    default: LikeStatuses.NONE,
+  },
+
+  createdAt: {
+    type: String,
+    required: [true, 'The createdAt field is required'],
+  },
+});
+
+export const postSchema = new Schema<PostType>({
   id: {
     type: String,
     required: [true, 'The id field is required'],
@@ -45,6 +82,21 @@ export const postSchema = new Schema({
     trim: true,
     minLength: [3, 'The blogName field must be at least 3, got {VALUE}'],
     maxLength: [15, 'The blogName field must be no more than 15, got {VALUE}'],
+  },
+
+  likesCount: {
+    type: Number,
+    default: 0,
+  },
+
+  dislikesCount: {
+    type: Number,
+    default: 0,
+  },
+
+  likes: {
+    type: [likeStatusPostSchema],
+    default: [],
   },
 
   createdAt: {

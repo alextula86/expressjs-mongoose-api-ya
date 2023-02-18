@@ -28,5 +28,5 @@ const commentsController = container.resolve(CommentsController)
 commentsRouter
   .get('/:id', getUserByBearerOrRefreshTokenMiddleware, commentsController.getComment.bind(commentsController))  
   .put('/:id', middlewares, commentsController.updateComment.bind(commentsController))
-  .put('/:id/like-status', middlewaresLikeStatus, commentsController.updateLikeStatusToComment.bind(commentsController))
+  .put('/:id/like-status', middlewaresLikeStatus, commentsController.updateCommentLikeStatus.bind(commentsController))
   .delete('/:id', authBearerMiddleware, commentsController.deleteComment.bind(commentsController))

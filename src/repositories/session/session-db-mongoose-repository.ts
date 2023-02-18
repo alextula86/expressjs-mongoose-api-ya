@@ -1,6 +1,8 @@
+import { injectable } from 'inversify'
 import { SessionModel } from '../db-mongoose'
 import { SessionType } from '../../types'
 
+@injectable()
 export class SessionRepository {
   async findSession(ip: string, url: string, deviceTitle: string): Promise<SessionType | null> {
     const foundSession: SessionType | null = await SessionModel.findOne({

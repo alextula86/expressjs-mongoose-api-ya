@@ -4,10 +4,11 @@ import { PostRepository } from '../repositories/post/post-db-mongoose-repository
 
 import {
   PostType,
-  PostViewModel,
+  LikeStatusPostType,
   QueryPostModel,
   UpdatePostService,
   CreaetPostService,
+  UpdateLikeToPostService,
   ResponseViewModelDetail,
   SortDirection,
 } from '../types'
@@ -21,7 +22,7 @@ export class PostService {
     pageSize,
     sortBy = 'createdAt',
     sortDirection =  SortDirection.DESC,
-  }: QueryPostModel): Promise<ResponseViewModelDetail<PostViewModel>> {
+  }: QueryPostModel): Promise<ResponseViewModelDetail<PostType>> {
     const foundAllPosts = await this.postRepository.findAllPosts({
       searchNameTerm,
       pageNumber,
@@ -32,7 +33,7 @@ export class PostService {
 
     return foundAllPosts
   }
-  async findPostById(id: string): Promise<PostViewModel | null> {
+  async findPostById(id: string): Promise<PostType | null> {
     const foundPostById = await this.postRepository.findPostById(id)
 
     return foundPostById
@@ -43,7 +44,7 @@ export class PostService {
     content,
     blogId,
     blogName,
-  }: CreaetPostService): Promise<PostViewModel> {
+  }: CreaetPostService): Promise<PostType> {
     const postTitle = trim(String(title))
     const postShortDescription = trim(String(shortDescription))
     const postContent = trim(String(content))
@@ -62,7 +63,7 @@ export class PostService {
     blogId,
     blogName,
   }: UpdatePostService): Promise<boolean> {
-    const updatedPost: PostType = {
+    const updatedPost = {
       id,
       title: trim(String(title)),
       shortDescription: trim(String(shortDescription)),
@@ -74,6 +75,34 @@ export class PostService {
     const isUpdatedPost = await this.postRepository.updatePost(updatedPost)
 
     return isUpdatedPost
+  }
+  async updatePostLikeStatus(postId: string, {
+    userId,
+    userLogin,
+    likeStatus,
+  }: UpdateLikeToPostService): Promise<boolean> {
+    // Определяем лайкал ли пользователь пост
+    const foundPostLikeStatuses = await this.postRepository.findPostLikeStatusesByUserId(postId, userId)
+    // Если пользователь не лайкал пост, то создаем инстанс лайк статуса и добавляем его для поста
+    if (!foundPostLikeStatuses) {
+      const createdLikeStatus = new LikeStatusPostType(userId, userLogin, likeStatus)
+      const isAddPostLikeStatus = await this.postRepository.addPostLikeStatus(postId, createdLikeStatus)
+
+      return isAddPostLikeStatus
+    }
+
+    // Определяем лайк статус пользователя
+    const likeStatusUserData = foundPostLikeStatuses.likes.find(item => item.userId === userId)
+
+    // Если лайк статус пользователя равен переданому лайк статусу не производим обновление лайк статуса
+    if (likeStatusUserData && likeStatusUserData.likeStatus === likeStatus) {
+      return true
+    }
+
+    // Обновляем лайк статус пользователя
+    const isUpdatedPostLikeStatuses = await this.postRepository.updatePostLikeStatusesByUserId(postId, userId, likeStatus)
+
+    return isUpdatedPostLikeStatuses
   }
   async deletePostById(id: string): Promise<boolean> {
     const isDeletePostById = await this.postRepository.deletePostById(id)

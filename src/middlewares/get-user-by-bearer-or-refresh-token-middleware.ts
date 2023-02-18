@@ -3,13 +3,12 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 import { container } from '../composition-roots'
-import { UserService, AuthService } from '../services'
+import { UserService } from '../services'
 
 import { jwtService } from '../application'
 
 export const getUserByBearerOrRefreshTokenMiddleware = async (req: Request & any, res: Response, next: NextFunction) => {
   const userService = container.resolve(UserService) 
-  const authService = container.resolve(AuthService)
 
   if (req.headers.authorization) {
     const [authType, authToken] = req.headers.authorization.split(' ')
@@ -25,21 +24,7 @@ export const getUserByBearerOrRefreshTokenMiddleware = async (req: Request & any
       return next()
     }
 
-    req.user = await userService.findUserById(userId)
-    return next()
-  }
-  
-  if (req.cookies.refreshToken) {
-    // Верифицируем refresh токен и получаем идентификатор пользователя
-    const refreshTokenData = await authService.checkAuthRefreshToken(req.cookies.refreshToken)
-
-    // Если идентификатор пользователя не определен, возвращаем статус 401
-    if (!refreshTokenData) {
-      return next()
-    }
-
-    req.user = await userService.findUserById(refreshTokenData.userId) 
-
+    req.user = await userService.findUserById(userId) // Записать только id пользователя
     return next()
   }
 

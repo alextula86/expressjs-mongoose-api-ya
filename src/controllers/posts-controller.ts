@@ -1,9 +1,11 @@
 import { Response } from 'express'
 import { injectable } from 'inversify'
 import { isEmpty } from 'lodash'
+import moment from 'moment'
 import { BlogService, PostService, CommentService } from '../services'
 
 import {
+  PostType,
   RequestWithBody,
   RequestWithQuery,
   RequestWithParams,
@@ -11,6 +13,7 @@ import {
   RequestWithParamsAndQuery,
   URIParamsPostModel,
   URIParamsCommentsByPostId,
+  UserRequestModel,
   QueryPostModel,
   QueryCommentModel,
   CreatePostModel,
@@ -19,6 +22,7 @@ import {
   PostViewModel,
   CommentType,
   CommentViewModel,
+  AddLikeToPostModel,
   ResponseViewModelDetail,
   LikeStatuses,
   HTTPStatuses,
@@ -32,7 +36,7 @@ export class PostsController {
     protected blogService: BlogService,
     protected commentService: CommentService,
   ) {}
-  async getPosts(req: RequestWithQuery<QueryPostModel>, res: Response<ResponseViewModelDetail<PostViewModel>>) {
+  async getPosts(req: RequestWithQuery<QueryPostModel> & any, res: Response<ResponseViewModelDetail<PostViewModel>>) {
     const allPosts = await this.postService.findAllPosts({
       searchNameTerm: req.query.searchNameTerm,
       pageNumber: req.query.pageNumber, 
@@ -41,16 +45,16 @@ export class PostsController {
       sortDirection: req.query.sortDirection,
     })
     
-    res.status(HTTPStatuses.SUCCESS200).send(allPosts)
+    res.status(HTTPStatuses.SUCCESS200).send(this._getPostsViewModelDetail(allPosts, req?.user?.userId))
   }
-  async getPost(req: RequestWithParams<URIParamsPostModel>, res: Response<PostViewModel>) {
+  async getPost(req: RequestWithParams<URIParamsPostModel> & any, res: Response<PostViewModel>) {
     const postById = await this.postService.findPostById(req.params.id)
 
     if (!postById) {
       return res.status(HTTPStatuses.NOTFOUND404).send()
     }
 
-    res.status(HTTPStatuses.SUCCESS200).send(postById)
+    res.status(HTTPStatuses.SUCCESS200).send(this._getPostViewModel(postById, req?.user?.userId))
   }
   async getCommentsByPostId(req: RequestWithParamsAndQuery<URIParamsCommentsByPostId, QueryCommentModel> & any, res: Response<ResponseViewModelDetail<CommentViewModel>>) {
     const postById = await this.postService.findPostById(req.params.postId)
@@ -68,7 +72,7 @@ export class PostsController {
 
     res.status(HTTPStatuses.SUCCESS200).send(this._getCommentsViewModelDetail(commentsByPostId, req?.user?.userId))
   }
-  async createPost(req: RequestWithBody<CreatePostModel>, res: Response<PostViewModel | ErrorsMessageType>) {
+  async createPost(req: RequestWithBody<CreatePostModel> & any, res: Response<PostViewModel | ErrorsMessageType>) {
     const blogById = await this.blogService.findBlogById(req.body.blogId)
 
     if (isEmpty(blogById)) {
@@ -83,7 +87,7 @@ export class PostsController {
       blogName: blogById.name,
     })
 
-    res.status(HTTPStatuses.CREATED201).send(createdPost)
+    res.status(HTTPStatuses.CREATED201).send(this._getPostViewModel(createdPost, req?.user?.userId))
   }
   async createCommentsByPostId(req: RequestWithParamsAndBody<URIParamsCommentsByPostId, CreateCommentsModel> & any, res: Response<CommentViewModel | ErrorsMessageType>) {
     const postById = await this.postService.findPostById(req.params.postId)
@@ -132,28 +136,79 @@ export class PostsController {
     
     res.status(HTTPStatuses.NOCONTENT204).send()
   }
-  _getMyStatus(dbComment: CommentType, userId: string): LikeStatuses {
+  async updateCommentLikeStatus(req: RequestWithParamsAndBody<URIParamsPostModel, AddLikeToPostModel> & UserRequestModel & any, res: Response<boolean>) {
+    // Получить сначала юзера!!!!
+    const postById = await this.postService.findPostById(req.params.id)
+
+    if (isEmpty(postById)) {
+      return res.status(HTTPStatuses.NOTFOUND404).send()
+    }
+    
+    const isLikeUpdated = await this.postService.updatePostLikeStatus(postById.id, {
+      userId: req.user!.userId,
+      userLogin: req.user!.login,
+      likeStatus: req.body.likeStatus,
+    })
+
+    if (!isLikeUpdated) {
+      return res.status(HTTPStatuses.NOTFOUND404).send()
+    }
+
+    res.status(HTTPStatuses.NOCONTENT204).send()
+  }
+  _getMyCommentStatus(db: CommentType, userId: string): LikeStatuses {
     if (!userId) {
       return LikeStatuses.NONE
     }
 
-    const currentLike = dbComment.likes.find(item => item.userId === userId)
+    const currentLike1 = db.likes.find(item => item.userId === userId)
 
-    if (currentLike) {
-      return currentLike.likeStatus
+    if (!currentLike1) {
+      return LikeStatuses.NONE
     }
 
-    const currentDislike = dbComment.dislikes.find(item => item.userId === userId)
-
-    if (currentDislike) {
-      return currentDislike.likeStatus
+    return currentLike1.likeStatus
+  }
+  _getMyPostStatus(db: PostType, userId: string): LikeStatuses {
+    if (!userId) {
+      return LikeStatuses.NONE
     }
 
-    return LikeStatuses.NONE
-    
+    const currentLike1 = db.likes.find(item => item.userId === userId)
+
+    if (!currentLike1) {
+      return LikeStatuses.NONE
+    }
+
+    return currentLike1.likeStatus
+  }
+  _getPostViewModel(dbPost: PostType, userId: string): PostViewModel {
+    const myStatus = this._getMyPostStatus(dbPost, userId)
+    const newestLikes = [...dbPost.likes]
+      .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+      .slice(2)
+    return {
+      id: dbPost.id,
+      title: dbPost.title,
+      shortDescription: dbPost.shortDescription,
+      content: dbPost.content,
+      blogId: dbPost.blogId,
+      blogName: dbPost.blogName,
+      createdAt: dbPost.createdAt,
+      extendedLikesInfo: {
+        likesCount: dbPost.likesCount,
+        dislikesCount: dbPost.dislikesCount,
+        myStatus: myStatus,
+        newestLikes: newestLikes.map(item => ({
+          addedAt: item.createdAt,
+          userId: item.userId,
+          login: item.userLogin,
+        }))
+      }
+    }
   }
   _getCommentViewModel(dbComment: CommentType, userId: string): CommentViewModel {
-    const myStatus = this._getMyStatus(dbComment, userId)
+    const myStatus = this._getMyCommentStatus(dbComment, userId)
 
     return {
       id: dbComment.id,
@@ -167,9 +222,48 @@ export class PostsController {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
         myStatus,
-        // likes: dbComment.likes,
-        // dislikes: dbComment.dislikes,
+        likes: dbComment.likes,
       },      
+    }
+  }
+  _getPostsViewModelDetail({
+    items,
+    totalCount,
+    pagesCount,
+    page,
+    pageSize,
+  }: ResponseViewModelDetail<PostType>, userId: string): ResponseViewModelDetail<PostViewModel> {
+    return {
+      pagesCount,
+      page,
+      pageSize,
+      totalCount,
+      items: items.map(item => {
+        const myStatus = this._getMyPostStatus(item, userId)
+
+        const newestLikes = [...item.likes]
+        .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+        .slice(2)
+
+        return {
+        id: item.id,
+        title: item.title,
+        shortDescription: item.shortDescription,
+        content: item.content,
+        blogId: item.blogId,
+        blogName: item.blogName,
+        createdAt: item.createdAt,
+        extendedLikesInfo: {
+          likesCount: item.likesCount,
+          dislikesCount: item.dislikesCount,
+          myStatus: myStatus,
+          newestLikes: newestLikes.map(item => ({
+            addedAt: item.createdAt,
+            userId: item.userId,
+            login: item.userLogin,
+          }))
+        }
+      }}),
     }
   }
   _getCommentsViewModelDetail({
@@ -185,7 +279,7 @@ export class PostsController {
       pageSize,
       totalCount,
       items: items.map(item => {
-        const myStatus = this._getMyStatus(item, userId)
+        const myStatus = this._getMyCommentStatus(item, userId)
 
         return {
           id: item.id,
@@ -199,8 +293,7 @@ export class PostsController {
             likesCount: item.likesCount,
             dislikesCount: item.dislikesCount,
             myStatus,
-            // likes: item.likes,
-            // dislikes: item.dislikes,
+            likes: item.likes,
           },      
         }
       }),

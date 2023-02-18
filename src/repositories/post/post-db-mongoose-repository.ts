@@ -3,9 +3,11 @@ import { PostModel } from '../db-mongoose'
 
 import {
   PostType,
-  PostViewModel,
   QueryPostModel,
+  UpdatePostService,
+  LikeStatusPostType,
   ResponseViewModelDetail,
+  LikeStatuses,
   SortDirection,
 } from '../../types'
 
@@ -17,7 +19,7 @@ export class PostRepository {
     pageSize,
     sortBy,
     sortDirection,
-  }: QueryPostModel): Promise<ResponseViewModelDetail<PostViewModel>> {
+  }: QueryPostModel): Promise<ResponseViewModelDetail<PostType>> {
     const number = pageNumber ? Number(pageNumber) : 1
     const size = pageSize ? Number(pageSize) : 10
 
@@ -39,27 +41,27 @@ export class PostRepository {
       .limit(size)
       .lean()
 
-    return this._getPostsViewModelDetail({
+    return {
       items: posts,
       totalCount,
       pagesCount,
       page: number,
       pageSize: size,
-    })
+    }
   }
-  async findPostById(id: string): Promise<PostViewModel | null> {
+  async findPostById(id: string): Promise<PostType | null> {
     const foundPost: PostType | null = await PostModel.findOne({ id })
 
     if (!foundPost) {
       return null
     }
 
-    return this._getPostViewModel(foundPost)
+    return foundPost
   }
-  async createdPost(createdPost: PostType): Promise<PostViewModel> {
+  async createdPost(createdPost: PostType): Promise<PostType> {
     await PostModel.create(createdPost)
 
-    return this._getPostViewModel(createdPost)
+    return createdPost
   }
   async updatePost({
     id,
@@ -68,7 +70,7 @@ export class PostRepository {
     content,
     blogId,
     blogName,
-  }: PostType): Promise<boolean> {
+  }: UpdatePostService): Promise<boolean> {
     const { matchedCount } = await PostModel.updateOne({ id }, {
       $set: {
         title,
@@ -81,43 +83,52 @@ export class PostRepository {
 
     return matchedCount === 1   
   }
+  async findPostLikeStatusesByUserId(postId: string, userId: string): Promise<PostType | null> {      
+    const foundPostLikeStatuses: PostType | null = await PostModel.findOne({ id: postId, "likes.userId": userId })
+    
+    return foundPostLikeStatuses
+  }
+  async addPostLikeStatus(postId: string, createdLikeStatus: LikeStatusPostType): Promise<boolean> {      
+    const updatedPostLikeStatus = await PostModel.findOneAndUpdate(
+      { id: postId },
+      { $push: { likes: createdLikeStatus } },
+      { returnDocument: 'after' },
+    )
+
+    if (updatedPostLikeStatus) {
+      const likesCount = updatedPostLikeStatus.likes.filter(item => item.likeStatus === LikeStatuses.LIKE).length
+      const dislikesCount = updatedPostLikeStatus.likes.filter(item => item.likeStatus === LikeStatuses.DISLIKE).length
+
+      await PostModel.updateOne(
+        { id: postId },
+        { $set: { likesCount, dislikesCount } },
+      )
+    }
+
+    return true
+  }
+  async updatePostLikeStatusesByUserId(postId: string, userId: string, likeStatus: LikeStatuses ): Promise<boolean> {      
+    const updatedPostLikeStatus = await PostModel.findOneAndUpdate(
+      { id: postId, "likes.userId": userId },
+      { $set: { 'likes.$.likeStatus': likeStatus } },
+      { returnDocument: 'after' },
+    )  
+    
+    if (updatedPostLikeStatus) {
+      const likesCount = updatedPostLikeStatus.likes.filter(item => item.likeStatus === LikeStatuses.LIKE).length
+      const dislikesCount = updatedPostLikeStatus.likes.filter(item => item.likeStatus === LikeStatuses.DISLIKE).length
+
+      await PostModel.updateOne(
+        { id: postId },
+        { $set: { likesCount, dislikesCount } },
+      )
+    }
+    
+    return true
+  }
   async deletePostById(id: string): Promise<boolean> {
     const { deletedCount } = await PostModel.deleteOne({ id })
 
     return deletedCount === 1
-  }
-  _getPostViewModel(dbPost: PostType): PostViewModel {
-    return {
-      id: dbPost.id,
-      title: dbPost.title,
-      shortDescription: dbPost.shortDescription,
-      content: dbPost.content,
-      blogId: dbPost.blogId,
-      blogName: dbPost.blogName,
-      createdAt: dbPost.createdAt,
-    }
-  }
-  _getPostsViewModelDetail({
-    items,
-    totalCount,
-    pagesCount,
-    page,
-    pageSize,
-  }: ResponseViewModelDetail<PostType>): ResponseViewModelDetail<PostViewModel> {
-    return {
-      pagesCount,
-      page,
-      pageSize,
-      totalCount,
-      items: items.map(item => ({
-        id: item.id,
-        title: item.title,
-        shortDescription: item.shortDescription,
-        content: item.content,
-        blogId: item.blogId,
-        blogName: item.blogName,
-        createdAt: item.createdAt,
-      })),
-    }
   }
 }

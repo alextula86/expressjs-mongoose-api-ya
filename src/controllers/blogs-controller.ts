@@ -1,8 +1,11 @@
 import { Response } from 'express'
 import { injectable } from 'inversify'
+import moment from 'moment'
 import { BlogService } from '../services/blog-service'
 
 import {
+  BlogType,
+  PostType,
   RequestWithBody,
   RequestWithQuery,
   RequestWithParams,
@@ -18,6 +21,7 @@ import {
   BlogViewModel,
   PostViewModel,
   ResponseViewModelDetail,
+  LikeStatuses,
   HTTPStatuses,
   ErrorsMessageType,
 } from '../types'
@@ -35,7 +39,7 @@ export class BlogsController {
       sortDirection: req.query.sortDirection,
     })
 
-    res.status(HTTPStatuses.SUCCESS200).send(allBlogs)
+    res.status(HTTPStatuses.SUCCESS200).send(this._getBlogsViewModelDetail(allBlogs))
   }
   async getBlog(req: RequestWithParams<URIParamsBlogModel>, res: Response<BlogViewModel>) {
     const blogById = await this.blogService.findBlogById(req.params.id)
@@ -44,9 +48,9 @@ export class BlogsController {
       return res.status(HTTPStatuses.NOTFOUND404).send()
     }
 
-    res.status(HTTPStatuses.SUCCESS200).send(blogById)
+    res.status(HTTPStatuses.SUCCESS200).send(this._getBlogViewModel(blogById))
   }
-  async getPostsByBlogId(req: RequestWithParamsAndQuery<URIParamsPostsByBlogId, QueryPostModel>, res: Response<ResponseViewModelDetail<PostViewModel>>) {
+  async getPostsByBlogId(req: RequestWithParamsAndQuery<URIParamsPostsByBlogId, QueryPostModel> & any, res: Response<ResponseViewModelDetail<PostViewModel>>) {
     const blogById = await this.blogService.findBlogById(req.params.blogId)
 
     if (!blogById) {
@@ -61,7 +65,7 @@ export class BlogsController {
       sortDirection: req.query.sortDirection,
     })
 
-    res.status(HTTPStatuses.SUCCESS200).send(postsByBlogId)
+    res.status(HTTPStatuses.SUCCESS200).send(this._getPostsViewModelDetail(postsByBlogId, req?.user?.userId))
   }
   async createBlog(req: RequestWithBody<CreateBlogModel>, res: Response<BlogViewModel | ErrorsMessageType>) {
     const createdBlog = await this.blogService.createdBlog({
@@ -70,9 +74,9 @@ export class BlogsController {
       websiteUrl: req.body.websiteUrl,
     })
 
-    res.status(HTTPStatuses.CREATED201).send(createdBlog)
+    res.status(HTTPStatuses.CREATED201).send(this._getBlogViewModel(createdBlog))
   }
-  async createPostByBlogId(req: RequestWithParamsAndBody<URIParamsPostsByBlogId, CreatePostForBlogModel>, res: Response<PostViewModel | ErrorsMessageType>) {
+  async createPostByBlogId(req: RequestWithParamsAndBody<URIParamsPostsByBlogId, CreatePostForBlogModel> & any, res: Response<PostViewModel | ErrorsMessageType>) {
     const blogById = await this.blogService.findBlogById(req.params.blogId)
 
     if (!blogById) {
@@ -87,7 +91,7 @@ export class BlogsController {
       blogName: blogById.name,
     })
 
-    res.status(HTTPStatuses.CREATED201).send(createdPostByBlogId)
+    res.status(HTTPStatuses.CREATED201).send(this._getPostViewModel(createdPostByBlogId, req?.user?.userId))
   }
   async updateBlog(req: RequestWithParamsAndBody<URIParamsBlogModel, UpdateBlogModel>, res: Response<boolean>) {
     const blogById = await this.blogService.findBlogById(req.params.id)
@@ -117,5 +121,111 @@ export class BlogsController {
     }
     
     res.status(HTTPStatuses.NOCONTENT204).send()
+  }
+  _getMyPostStatus(db: PostType, userId: string): LikeStatuses {
+    if (!userId) {
+      return LikeStatuses.NONE
+    }
+
+    const currentLike1 = db.likes.find(item => item.userId === userId)
+
+    if (!currentLike1) {
+      return LikeStatuses.NONE
+    }
+
+    return currentLike1.likeStatus
+  }
+  _getBlogViewModel(dbBlog: BlogType): BlogViewModel {
+    return {
+      id: dbBlog.id,
+      name: dbBlog.name,
+      description: dbBlog.description,
+      websiteUrl: dbBlog.websiteUrl,
+      createdAt: dbBlog.createdAt,
+    }
+  }
+  _getPostViewModel(dbPost: PostType, userId: string): PostViewModel {
+    const myStatus = this._getMyPostStatus(dbPost, userId)
+    const newestLikes = [...dbPost.likes]
+      .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+      .slice(2)
+    return {
+      id: dbPost.id,
+      title: dbPost.title,
+      shortDescription: dbPost.shortDescription,
+      content: dbPost.content,
+      blogId: dbPost.blogId,
+      blogName: dbPost.blogName,
+      createdAt: dbPost.createdAt,
+      extendedLikesInfo: {
+        likesCount: dbPost.likesCount,
+        dislikesCount: dbPost.dislikesCount,
+        myStatus: myStatus,
+        newestLikes: newestLikes.map(item => ({
+          addedAt: item.createdAt,
+          userId: item.userId,
+          login: item.userLogin,
+        }))
+      }
+    }
+  }
+  _getBlogsViewModelDetail({
+    items,
+    totalCount,
+    pagesCount,
+    page,
+    pageSize,
+  }: ResponseViewModelDetail<BlogType>): ResponseViewModelDetail<BlogViewModel> {
+    return {
+      pagesCount,
+      page,
+      pageSize,
+      totalCount,
+      items: items.map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        websiteUrl: item.websiteUrl,
+        createdAt: item.createdAt,
+      })),
+    }
+  }
+  _getPostsViewModelDetail({
+    items,
+    totalCount,
+    pagesCount,
+    page,
+    pageSize,
+  }: ResponseViewModelDetail<PostType>, userId: string): ResponseViewModelDetail<PostViewModel> {
+    return {
+      pagesCount,
+      page,
+      pageSize,
+      totalCount,
+      items: items.map(item => {
+        const myStatus = this._getMyPostStatus(item, userId)
+
+        return {
+        id: item.id,
+        title: item.title,
+        shortDescription: item.shortDescription,
+        content: item.content,
+        blogId: item.blogId,
+        blogName: item.blogName,
+        createdAt: item.createdAt,
+        extendedLikesInfo: {
+          likesCount: item.likesCount,
+          dislikesCount: item.dislikesCount,
+          myStatus: myStatus,
+          newestLikes: [
+            /*{
+              "addedAt": "2023-02-18T17:03:30.606Z",
+              "userId": "string",
+              "login": "string"
+            }*/
+          ]
+        }
+      }}),
+    }
   }
 }

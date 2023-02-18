@@ -1,7 +1,8 @@
 import mongoose from 'mongoose'
+import { AccountDataType, EmailConfirmationType, PasswordRecoveryType, UserType } from '../types'
 const { Schema } = mongoose
 
-const accountDataSchema = new Schema({
+const accountDataSchema = new Schema<AccountDataType>({
   login: {
     type: String,
     required: [true, 'The login field is required'],
@@ -29,7 +30,7 @@ const accountDataSchema = new Schema({
   },
 })
 
-const emailConfirmationSchema = new Schema({
+const emailConfirmationSchema = new Schema<EmailConfirmationType>({
   confirmationCode: {
     type: String,
     required: [true, 'The confirmationCode field is required'],
@@ -47,7 +48,7 @@ const emailConfirmationSchema = new Schema({
   },
 })
 
-const passwordRecoverySchema = new Schema({
+const passwordRecoverySchema = new Schema<PasswordRecoveryType>({
   recoveryCode: {
     type: String,
     trim: true,
@@ -65,7 +66,7 @@ const passwordRecoverySchema = new Schema({
   },
 })
 
-export const userSchema = new Schema({
+export const userSchema = new Schema<UserType>({
   id: {
     type: String,
     required: [true, 'The id field is required'],

@@ -20,7 +20,6 @@ export class CommentType {
   likesCount: number
   dislikesCount: number
   likes: LikeStatusCommentType[]
-  dislikes: LikeStatusCommentType[]
   constructor(
     public content: string,
     public postId: string,
@@ -31,7 +30,6 @@ export class CommentType {
     this.likesCount = 0
     this.dislikesCount = 0
     this.likes = []
-    this.dislikes = []
     this.createdAt = new Date().toISOString()
   }
 }

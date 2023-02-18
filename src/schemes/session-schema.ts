@@ -1,7 +1,8 @@
 import mongoose from 'mongoose'
 const { Schema } = mongoose
+import { SessionType } from '../types'
 
-export const sessionSchema = new Schema({
+export const sessionSchema = new Schema<SessionType>({
   id: {
     type: String,
     required: [true, 'The id field is required'],
@@ -17,13 +18,8 @@ export const sessionSchema = new Schema({
     required: [true, 'The deviceTitle field is required'],
   },
 
-  userId: {
-    type: String,
-    required: [true, 'The userId field is required'],
-  },
-
   url: {
-    type: Boolean,
+    type: String,
     required: [true, 'The url field is required'],
   },
 
