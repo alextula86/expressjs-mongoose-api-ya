@@ -27,7 +27,7 @@ export const SessionModel = mongoose.model('sessions', sessionSchema)
 
 export async function runDb() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/bloggers')
+    await mongoose.connect(mongoUri)
     console.log('Connected successfully to server by mongoose')
   } catch {
     console.log('Can`t connect to db')
