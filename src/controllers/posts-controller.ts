@@ -222,7 +222,7 @@ export class PostsController {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
         myStatus,
-        likes: dbComment.likes,
+        // likes: dbComment.likes,
       },      
     }
   }
@@ -293,7 +293,7 @@ export class PostsController {
             likesCount: item.likesCount,
             dislikesCount: item.dislikesCount,
             myStatus,
-            likes: item.likes,
+            // likes: item.likes,
           },      
         }
       }),

@@ -102,7 +102,7 @@ export class CommentsController {
         likesCount: dbComment.likesCount,
         dislikesCount: dbComment.dislikesCount,
         myStatus,
-        likes: dbComment.likes,
+        // likes: dbComment.likes,
       },      
     }
   } 
