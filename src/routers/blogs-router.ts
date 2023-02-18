@@ -3,7 +3,6 @@ import { BlogsController } from '../controllers'
 import { container } from '../composition-roots'
 import {
   authBasicMiddleware,
-  authBearerMiddleware,
   getUserByBearerOrRefreshTokenMiddleware,
   nameBlogValidation,
   descriptionBlogValidation,
@@ -25,7 +24,7 @@ const middlewares = [
 ]
 
 const middlewaresPost = [
-  authBearerMiddleware,
+  authBasicMiddleware,
   titlePostValidation,
   shortPostDescriptionValidation,
   contentPostValidation,
