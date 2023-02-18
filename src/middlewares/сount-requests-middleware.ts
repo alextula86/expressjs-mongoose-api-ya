@@ -24,6 +24,7 @@ export const сountRequestsMiddleware = async (req: Request & any, res: Response
 
   const currentLocalDate = Date.now()
   const sessionDate = new Date(foundSession.issuedAtt).getTime()
+
   const diffSeconds = (currentLocalDate - sessionDate) / 1000
 
   if (diffSeconds > limitSecondsRate) {
@@ -32,7 +33,7 @@ export const сountRequestsMiddleware = async (req: Request & any, res: Response
   }
 
   const response = await sessionService.increaseAttempt(foundSession.id)
-  
+
   if (!response) {
     return res.status(HTTPStatuses.SERVERERROR500).send()
   }

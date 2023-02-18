@@ -27,7 +27,7 @@ export class SessionRepository {
       return null
     }
 
-    return null
+    return document
   }
   async resetAttempt(id: string): Promise<boolean> {
     const { matchedCount } = await SessionModel.updateOne({ id }, {
