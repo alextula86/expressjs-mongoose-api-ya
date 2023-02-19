@@ -186,7 +186,8 @@ export class PostsController {
     const myStatus = this._getMyPostStatus(dbPost, userId)
     const newestLikes = [...dbPost.likes]
       .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-      .slice(2)
+      .slice(0, 2)
+
     return {
       id: dbPost.id,
       title: dbPost.title,
@@ -199,6 +200,7 @@ export class PostsController {
         likesCount: dbPost.likesCount,
         dislikesCount: dbPost.dislikesCount,
         myStatus: myStatus,
+        likes: dbPost.likes,
         newestLikes: newestLikes.map(item => ({
           addedAt: item.createdAt,
           userId: item.userId,
@@ -240,10 +242,9 @@ export class PostsController {
       totalCount,
       items: items.map(item => {
         const myStatus = this._getMyPostStatus(item, userId)
-
         const newestLikes = [...item.likes]
-        .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-        .slice(2)
+          .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+          .slice(0, 2)
 
         return {
         id: item.id,
