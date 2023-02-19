@@ -101,9 +101,9 @@ export const postSchema = new Schema<PostType>({
 
   newestLikes: {
     type: [{
-      addedAt: String,
+      createdAt: String,
       userId: String,
-      login: String,
+      userLogin: String,
     }],
     default: [],
   },

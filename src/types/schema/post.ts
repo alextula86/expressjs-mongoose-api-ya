@@ -2,9 +2,9 @@ import { getNextStrId } from '../../utils'
 import { LikeStatuses } from '../enums'
 
 export type NewestLikes = {
-  addedAt: string
+  createdAt: string
   userId: string
-  login: string
+  userLogin: string
 }
 
 export class LikeStatusPostType {
