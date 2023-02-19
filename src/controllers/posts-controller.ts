@@ -184,10 +184,6 @@ export class PostsController {
   }
   _getPostViewModel(dbPost: PostType, userId: string): PostViewModel {
     const myStatus = this._getMyPostStatus(dbPost, userId)
-    /*const newestLikes = dbPost.likes
-      .filter(item => item.likeStatus === LikeStatuses.LIKE)
-      .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-      .slice(0, 3)*/
 
     return {
       id: dbPost.id,
@@ -201,11 +197,7 @@ export class PostsController {
         likesCount: dbPost.likesCount,
         dislikesCount: dbPost.dislikesCount,
         myStatus: myStatus,
-        newestLikes: dbPost.newestLikes.map(item => ({
-          addedAt: item.addedAt,
-          userId: item.userId,
-          login: item.login,
-        })),
+        newestLikes: dbPost.newestLikes,
         // likes: dbPost.likes,
       }
     }
@@ -243,10 +235,6 @@ export class PostsController {
       totalCount,
       items: items.map(item => {
         const myStatus = this._getMyPostStatus(item, userId)
-        /*const newestLikes = item.likes
-          .filter(item => item.likeStatus === LikeStatuses.LIKE)
-          .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-          .slice(0, 3)*/
 
         return {
         id: item.id,
@@ -260,11 +248,7 @@ export class PostsController {
           likesCount: item.likesCount,
           dislikesCount: item.dislikesCount,
           myStatus: myStatus,
-          newestLikes: item.newestLikes.map(item => ({
-            addedAt: item.addedAt,
-            userId: item.userId,
-            login: item.login,
-          })),
+          newestLikes: item.newestLikes,
           // likes: item.likes,
         }
       }}),

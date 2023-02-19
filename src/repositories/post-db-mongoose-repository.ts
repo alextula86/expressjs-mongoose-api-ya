@@ -102,6 +102,11 @@ export class PostRepository {
       const newestLikes = updatedPostLikeStatus.likes
         .filter(item => item.likeStatus === LikeStatuses.LIKE)
         .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+        .map(item => ({
+          addedAt: item.createdAt,
+          userId: item.userId,
+          login: item.userLogin,
+        }))
         .slice(0, 3)
 
       await PostModel.updateOne(
@@ -125,6 +130,11 @@ export class PostRepository {
       const newestLikes = updatedPostLikeStatus.likes
         .filter(item => item.likeStatus === LikeStatuses.LIKE)
         .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+        .map(item => ({
+          addedAt: item.createdAt,
+          userId: item.userId,
+          login: item.userLogin,
+        }))
         .slice(0, 3)
 
       await PostModel.updateOne(
