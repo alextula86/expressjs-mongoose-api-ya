@@ -206,6 +206,10 @@ export class BlogsController {
       totalCount,
       items: items.map(item => {
         const myStatus = this._getMyPostStatus(item, userId)
+        const newestLikes = item.likes
+          .filter(item => item.likeStatus === LikeStatuses.LIKE)
+          .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+          .slice(0, 2)
 
         return {
         id: item.id,
@@ -219,13 +223,11 @@ export class BlogsController {
           likesCount: item.likesCount,
           dislikesCount: item.dislikesCount,
           myStatus: myStatus,
-          newestLikes: [
-            /*{
-              "addedAt": "2023-02-18T17:03:30.606Z",
-              "userId": "string",
-              "login": "string"
-            }*/
-          ]
+          newestLikes: newestLikes.map(item => ({
+            addedAt: item.createdAt,
+            userId: item.userId,
+            login: item.userLogin,
+          }))
         }
       }}),
     }
