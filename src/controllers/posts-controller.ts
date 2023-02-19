@@ -1,7 +1,7 @@
 import { Response } from 'express'
 import { injectable } from 'inversify'
 import { isEmpty } from 'lodash'
-import moment from 'moment'
+// import moment from 'moment'
 import { BlogService, PostService, CommentService } from '../services'
 
 import {
@@ -184,10 +184,10 @@ export class PostsController {
   }
   _getPostViewModel(dbPost: PostType, userId: string): PostViewModel {
     const myStatus = this._getMyPostStatus(dbPost, userId)
-    const newestLikes = dbPost.likes
+    /*const newestLikes = dbPost.likes
       .filter(item => item.likeStatus === LikeStatuses.LIKE)
       .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-      .slice(0, 3)
+      .slice(0, 3)*/
 
     return {
       id: dbPost.id,
@@ -201,12 +201,8 @@ export class PostsController {
         likesCount: dbPost.likesCount,
         dislikesCount: dbPost.dislikesCount,
         myStatus: myStatus,
+        newestLikes: dbPost.newestLikes,
         // likes: dbPost.likes,
-        newestLikes: newestLikes.map(item => ({
-          addedAt: item.createdAt,
-          userId: item.userId,
-          login: item.userLogin,
-        }))
       }
     }
   }
@@ -243,10 +239,10 @@ export class PostsController {
       totalCount,
       items: items.map(item => {
         const myStatus = this._getMyPostStatus(item, userId)
-        const newestLikes = item.likes
+        /*const newestLikes = item.likes
           .filter(item => item.likeStatus === LikeStatuses.LIKE)
           .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-          .slice(0, 3)
+          .slice(0, 3)*/
 
         return {
         id: item.id,
@@ -260,12 +256,8 @@ export class PostsController {
           likesCount: item.likesCount,
           dislikesCount: item.dislikesCount,
           myStatus: myStatus,
+          newestLikes: item.newestLikes,
           // likes: item.likes,
-          newestLikes: newestLikes.map(item => ({
-            addedAt: item.createdAt,
-            userId: item.userId,
-            login: item.userLogin,
-          }))
         }
       }}),
     }

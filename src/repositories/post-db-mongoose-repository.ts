@@ -1,4 +1,5 @@
 import { injectable } from 'inversify'
+import moment from 'moment'
 import { PostModel } from './db-mongoose'
 
 import {
@@ -98,10 +99,14 @@ export class PostRepository {
     if (updatedPostLikeStatus) {
       const likesCount = updatedPostLikeStatus.likes.filter(item => item.likeStatus === LikeStatuses.LIKE).length
       const dislikesCount = updatedPostLikeStatus.likes.filter(item => item.likeStatus === LikeStatuses.DISLIKE).length
+      const newestLikes = updatedPostLikeStatus.likes
+        .filter(item => item.likeStatus === LikeStatuses.LIKE)
+        .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+        .slice(0, 3)
 
       await PostModel.updateOne(
         { id: postId },
-        { $set: { likesCount, dislikesCount } },
+        { $set: { likesCount, dislikesCount, newestLikes } },
       )
     }
 
@@ -117,10 +122,14 @@ export class PostRepository {
     if (updatedPostLikeStatus) {
       const likesCount = updatedPostLikeStatus.likes.filter(item => item.likeStatus === LikeStatuses.LIKE).length
       const dislikesCount = updatedPostLikeStatus.likes.filter(item => item.likeStatus === LikeStatuses.DISLIKE).length
+      const newestLikes = updatedPostLikeStatus.likes
+        .filter(item => item.likeStatus === LikeStatuses.LIKE)
+        .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
+        .slice(0, 3)
 
       await PostModel.updateOne(
         { id: postId },
-        { $set: { likesCount, dislikesCount } },
+        { $set: { likesCount, dislikesCount, newestLikes } },
       )
     }
     

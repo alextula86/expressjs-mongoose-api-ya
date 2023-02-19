@@ -1,11 +1,5 @@
-import { LikeStatusPostType } from '../../schema'
+import { LikeStatusPostType, NewestLikes } from '../../schema'
 import { LikeStatuses } from '../../enums'
-
-type NewestLikes = {
-  addedAt: string
-  userId: string
-  login: string
-}
 
 type ExtendedLikesInfo = {
   likesCount: number

@@ -1,6 +1,12 @@
 import { getNextStrId } from '../../utils'
 import { LikeStatuses } from '../enums'
 
+export type NewestLikes = {
+  addedAt: string
+  userId: string
+  login: string
+}
+
 export class LikeStatusPostType {
   id: string
   createdAt: string
@@ -20,6 +26,7 @@ export class PostType {
   likesCount: number
   dislikesCount: number
   likes: LikeStatusPostType[]
+  newestLikes: NewestLikes[]
   constructor(
     public title: string,
     public shortDescription: string,
@@ -31,6 +38,7 @@ export class PostType {
     this.likesCount = 0
     this.dislikesCount = 0
     this.likes = []
+    this.newestLikes = []
     this.createdAt = new Date().toISOString()
   }
 }

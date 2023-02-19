@@ -1,6 +1,6 @@
 import { Response } from 'express'
 import { injectable } from 'inversify'
-import moment from 'moment'
+// import moment from 'moment'
 import { BlogService } from '../services/blog-service'
 
 import {
@@ -146,10 +146,10 @@ export class BlogsController {
   }
   _getPostViewModel(dbPost: PostType, userId: string): PostViewModel {
     const myStatus = this._getMyPostStatus(dbPost, userId)
-    const newestLikes = dbPost.likes
+    /*const newestLikes = dbPost.likes
       .filter(item => item.likeStatus === LikeStatuses.LIKE)
       .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-      .slice(0, 3)
+      .slice(0, 3)*/
 
     return {
       id: dbPost.id,
@@ -163,11 +163,7 @@ export class BlogsController {
         likesCount: dbPost.likesCount,
         dislikesCount: dbPost.dislikesCount,
         myStatus: myStatus,
-        newestLikes: newestLikes.map(item => ({
-          addedAt: item.createdAt,
-          userId: item.userId,
-          login: item.userLogin,
-        }))
+        newestLikes: dbPost.newestLikes,
       }
     }
   }
@@ -206,10 +202,10 @@ export class BlogsController {
       totalCount,
       items: items.map(item => {
         const myStatus = this._getMyPostStatus(item, userId)
-        const newestLikes = item.likes
+        /*const newestLikes = item.likes
           .filter(item => item.likeStatus === LikeStatuses.LIKE)
           .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-          .slice(0, 3)
+          .slice(0, 3)*/
 
         return {
         id: item.id,
@@ -223,11 +219,7 @@ export class BlogsController {
           likesCount: item.likesCount,
           dislikesCount: item.dislikesCount,
           myStatus: myStatus,
-          newestLikes: newestLikes.map(item => ({
-            addedAt: item.createdAt,
-            userId: item.userId,
-            login: item.userLogin,
-          }))
+          newestLikes: item.newestLikes,
         }
       }}),
     }

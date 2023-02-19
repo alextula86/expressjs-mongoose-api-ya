@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { LikeStatuses, PostType, LikeStatusPostType } from '../types'
+import { LikeStatuses, NewestLikes, PostType, LikeStatusPostType } from '../types'
 
 const { Schema } = mongoose
 
@@ -96,6 +96,15 @@ export const postSchema = new Schema<PostType>({
 
   likes: {
     type: [likeStatusPostSchema],
+    default: [],
+  },
+
+  newestLikes: {
+    type: [{
+      addedAt: String,
+      userId: String,
+      login: String,
+    }],
     default: [],
   },
 
