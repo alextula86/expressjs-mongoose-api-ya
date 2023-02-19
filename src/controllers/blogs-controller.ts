@@ -148,7 +148,8 @@ export class BlogsController {
     const myStatus = this._getMyPostStatus(dbPost, userId)
     const newestLikes = [...dbPost.likes]
       .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-      .slice(2)
+      .slice(0, 2)
+
     return {
       id: dbPost.id,
       title: dbPost.title,

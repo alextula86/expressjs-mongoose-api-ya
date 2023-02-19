@@ -200,7 +200,7 @@ export class PostsController {
         likesCount: dbPost.likesCount,
         dislikesCount: dbPost.dislikesCount,
         myStatus: myStatus,
-        likes: dbPost.likes,
+        // likes: dbPost.likes,
         newestLikes: newestLikes.map(item => ({
           addedAt: item.createdAt,
           userId: item.userId,
