@@ -149,7 +149,7 @@ export class BlogsController {
     const newestLikes = dbPost.likes
       .filter(item => item.likeStatus === LikeStatuses.LIKE)
       .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-      .slice(0, 2)
+      .slice(0, 3)
 
     return {
       id: dbPost.id,
@@ -209,7 +209,7 @@ export class BlogsController {
         const newestLikes = item.likes
           .filter(item => item.likeStatus === LikeStatuses.LIKE)
           .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
-          .slice(0, 2)
+          .slice(0, 3)
 
         return {
         id: item.id,
