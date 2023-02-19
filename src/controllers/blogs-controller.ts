@@ -146,7 +146,8 @@ export class BlogsController {
   }
   _getPostViewModel(dbPost: PostType, userId: string): PostViewModel {
     const myStatus = this._getMyPostStatus(dbPost, userId)
-    const newestLikes = [...dbPost.likes]
+    const newestLikes = dbPost.likes
+      .filter(item => item.likeStatus === LikeStatuses.LIKE)
       .sort((a, b) => moment(b.createdAt).diff(moment(a.createdAt)))
       .slice(0, 2)
 
