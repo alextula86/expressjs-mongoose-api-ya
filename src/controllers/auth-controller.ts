@@ -4,17 +4,21 @@ import { UserService, AuthService, DeviceService } from '../services'
 
 import {
   RequestWithBody,
+  ResponseViewModelDetail,
   AuthUserModel,
+  UserAuthViewModel,
   AuthAccessTokenModel,
   CreateUserModel,
   AuthUserCodeModel,
   AuthUserEmailModel,
   AuthUserConfirmPasswordModel,
+  UserType,
   UserViewModel,
   HTTPStatuses,
   ErrorsMessageType,
 } from '../types'
 
+import { usersErrorsValidator } from '../errors'
 import { jwtService } from '../application'
 import { getNextStrId } from '../utils'
 
@@ -25,11 +29,16 @@ export class AuthController {
     protected userService: UserService,
     protected deviceService: DeviceService,
     ) {}
-  async me(req: Request & any, res: Response) {
-    // Ищем пользователя по идентификатору, если пользователь не найден то Middleware вернет статус 401
+  async me(req: Request & any, res: Response<UserAuthViewModel>) {
+    // Ищем пользователя по идентификатору, если пользователь не найден, то Middleware вернет статус 401
     const foundUserById = await this.userService.findUserById(req.user.userId)
+    // Если пользователь по идентификатору не найден, возвращаем статус 401
+    if (!foundUserById) {
+      return res.status(HTTPStatuses.UNAUTHORIZED401).send()
+    }
+    
     // Если пользователь найден возвращаем статус 200 и найденного пользователя
-    res.status(HTTPStatuses.SUCCESS200).send(foundUserById)
+    res.status(HTTPStatuses.SUCCESS200).send(this._getUserAuthViewModel(foundUserById))
   }
   async login(req: RequestWithBody<AuthUserModel>, res: Response<AuthAccessTokenModel | ErrorsMessageType>) {
     // Проверяем правильность ввода логина/email и пароля
@@ -121,9 +130,12 @@ export class AuthController {
     // Отправляем код подтверждения email
     const isConfirmed = await this.authService.confirmEmail(req.body.code)
 
-    // Если код подтверждения email не отправлен, возвращаем статус 400
+    // Если пользователь по коду подтверждения email не найден,
+    // Если дата для подтверждения email по коду просрочена
+    // Если email уже подтвержден
+    // Возвращаем статус 400 и сообщение об ошибке
     if (!isConfirmed) {
-      return res.status(HTTPStatuses.BADREQUEST400).send()
+      return res.status(HTTPStatuses.BADREQUEST400).send({ errorsMessages: [usersErrorsValidator.codeError] })
     }
 
     // Если код подтверждения email отправлен успешно, возвращаем статус 204
@@ -175,5 +187,12 @@ export class AuthController {
 
     // В случае успешного обновления пароля пользователя возвращаем статус 204
     res.status(HTTPStatuses.NOCONTENT204).send()
+  }
+  _getUserAuthViewModel(dbUser: UserType): UserAuthViewModel {
+    return {
+      userId: dbUser.id,
+      login: dbUser.accountData.login,
+      email: dbUser.accountData.email,
+    }
   }
 }

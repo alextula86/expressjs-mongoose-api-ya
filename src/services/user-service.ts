@@ -6,6 +6,7 @@ import { generateUUID } from '../utils'
 
 import {
   UserType,
+  AuthUserModel,
   UserViewModel,
   UserAuthViewModel,
   QueryUserModel,
@@ -24,7 +25,7 @@ export class UserService {
     pageSize,
     sortBy = 'createdAt',
     sortDirection =  SortDirection.DESC,
-  }: QueryUserModel): Promise<ResponseViewModelDetail<UserViewModel>> {
+  }: QueryUserModel): Promise<ResponseViewModelDetail<UserType>> {
     const foundAllUsers = await this.userRepository.findAllUsers({
       searchLoginTerm,
       searchEmailTerm,
@@ -36,12 +37,12 @@ export class UserService {
 
     return foundAllUsers
   }
-  async findUserById(id: string): Promise<UserAuthViewModel | null> {
+  async findUserById(id: string): Promise<UserType | null> {
     const foundUserById = await this.userRepository.findUserById(id)
 
     return foundUserById
   }
-  async createdUser({ login, password, email }: CreaetUserService): Promise<UserViewModel> {
+  async createdUser({ login, password, email }: CreaetUserService): Promise<UserType> {
     const passwordSalt = await bcrypt.genSaltSync(10)
     const passwordHash = await this._generateHash(password, passwordSalt)
     

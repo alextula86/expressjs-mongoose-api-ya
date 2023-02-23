@@ -9,6 +9,7 @@ import {
   URIParamsUserModel,
   QueryUserModel,
   CreateUserModel,
+  UserType,
   UserViewModel,
   ResponseViewModelDetail,
   HTTPStatuses,
@@ -28,7 +29,7 @@ export class UserController {
       sortDirection: req.query.sortDirection,
     })  
 
-    res.status(HTTPStatuses.SUCCESS200).send(allUsers)
+    res.status(HTTPStatuses.SUCCESS200).send(this._getUsersViewModelDetail(allUsers))
   }
   async createUser(req: RequestWithBody<CreateUserModel>, res: Response<UserViewModel | ErrorsMessageType>) {
     const createdUser = await this.userService.createdUser({
@@ -37,7 +38,7 @@ export class UserController {
       email: req.body.email,
     })
 
-    res.status(HTTPStatuses.CREATED201).send(createdUser)
+    res.status(HTTPStatuses.CREATED201).send(this._getUserViewModel(createdUser))
   }
   async deleteUser(req: RequestWithParams<URIParamsUserModel>, res: Response<boolean>) {
     const isUserDeleted = await this.userService.deleteUserById(req.params.id)
@@ -47,5 +48,33 @@ export class UserController {
     }
     
     res.status(HTTPStatuses.NOCONTENT204).send()
+  }
+  _getUserViewModel(dbUser: UserType): UserViewModel {
+    return {
+      id: dbUser.id,
+      login: dbUser.accountData.login,
+      email: dbUser.accountData.email,
+      createdAt: dbUser.accountData.createdAt,
+    }
+  }
+  _getUsersViewModelDetail({
+    items,
+    totalCount,
+    pagesCount,
+    page,
+    pageSize,
+  }: ResponseViewModelDetail<UserType>): ResponseViewModelDetail<UserViewModel> {
+    return {
+      pagesCount,
+      page,
+      pageSize,
+      totalCount,
+      items: items.map(item => ({
+        id: item.id,
+        login: item.accountData.login,
+        email: item.accountData.email,
+        createdAt: item.accountData.createdAt,
+      })),
+    }
   }
 }

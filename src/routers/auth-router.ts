@@ -45,7 +45,7 @@ const middlewaresRefreshToken = [
 const middlewaresRegistrationConfirmation = [
   сountRequestsMiddleware,
   codeUserValidation,
-  existsUserByConfirmationCode,
+  // existsUserByConfirmationCode,
 ]
 
 const middlewaresRegistrationEmailResending = [

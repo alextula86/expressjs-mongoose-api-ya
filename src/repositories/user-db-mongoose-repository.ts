@@ -1,11 +1,9 @@
 import { injectable } from 'inversify'
 import { isEmpty } from 'lodash'
-import { UserModel } from './db-mongoose'
+import { UserModel, UserHydratedDocumentType } from '../models'
 
 import {
   UserType,
-  UserViewModel,
-  UserAuthViewModel,
   QueryUserModel,
   ResponseViewModelDetail,
   SortDirection,
@@ -20,7 +18,7 @@ export class UserRepository {
     pageSize,
     sortBy,
     sortDirection,
-  }: QueryUserModel): Promise<ResponseViewModelDetail<UserViewModel>> {
+  }: QueryUserModel): Promise<ResponseViewModelDetail<UserType>> {
     const number = pageNumber ? Number(pageNumber) : 1
     const size = pageSize ? Number(pageSize) : 10
 
@@ -48,22 +46,22 @@ export class UserRepository {
       .limit(size)
       .lean()
 
-    return this._getUsersViewModelDetail({
+    return {
       items: users,
       totalCount,
       pagesCount,
       page: number,
       pageSize: size,
-    })
+    }
   }
-  async findUserById(id: string): Promise<UserAuthViewModel | null> {
+  async findUserById(id: string): Promise<UserType | null> {
     const foundUser: UserType | null = await UserModel.findOne({ id })
 
     if (!foundUser) {
       return null
     }
 
-    return this._getUserAuthViewModel(foundUser)
+    return foundUser
   }
   async findRefreshTokenByUserId(userId: string): Promise<{ refreshToken: string } | null> {
     const foundUser: UserType | null = await UserModel.findOne({ 'id': userId })
@@ -75,7 +73,7 @@ export class UserRepository {
     return { refreshToken: foundUser.refreshToken }
   }
   async findByLoginOrEmail(loginOrEmail: string): Promise<UserType | null> {
-    const foundUser: UserType | null = await UserModel.findOne({ $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }] })
+    const foundUser = await UserModel.findOne({ $or: [{ 'accountData.login': loginOrEmail }, { 'accountData.email': loginOrEmail }] })
 
     if (!foundUser) {
       return null
@@ -83,8 +81,8 @@ export class UserRepository {
 
     return foundUser
   }
-  async findByConfirmationCode(code: string): Promise<UserType | null> {
-    const foundUser: UserType | null = await UserModel.findOne({ 'emailConfirmation.confirmationCode': code })
+  async findByConfirmationCode(code: string) {
+    const foundUser = await UserModel.findOne({ 'emailConfirmation.confirmationCode': code })
 
     if (!foundUser) {
       return null
@@ -101,25 +99,25 @@ export class UserRepository {
 
     return foundUser
   }
-  async createdUser(createdUser: UserType): Promise<UserViewModel> {
+  async save(user: UserHydratedDocumentType): Promise<UserHydratedDocumentType> {
+    return await user.save()
+  }
+  async createdUser(createdUser: UserType): Promise<UserType> {
     await UserModel.create(createdUser)
 
-    return this._getUserViewModel(createdUser)
+    return createdUser
   }
   async deleteUserById(id: string): Promise<boolean> {
     const { deletedCount } = await UserModel.deleteOne({ id })
 
     return deletedCount === 1
   }
-  async updateConfirmationByCode(code: string): Promise<boolean> {
-    const result = await UserModel.updateOne({ 'emailConfirmation.confirmationCode': code }, {
-      $set: {
-        'emailConfirmation.isConfirmed': true
-      }
-    })
-
-    return result.modifiedCount === 1
-  }
+  /*async updateConfirmation(userId: string): Promise<boolean> {
+    const user = await UserModel.findOne({ id: userId })
+    user!.emailConfirmation.isConfirmed = true
+    await this.save(user)
+    return true
+  }*/
   async updateConfirmationCodeByEmail(email: string, code: string): Promise<boolean> {
     const result = await UserModel.updateOne({ 'accountData.email': email }, {
       $set: {
@@ -158,40 +156,5 @@ export class UserRepository {
     })
 
     return result.modifiedCount === 1
-  }
-  _getUserViewModel(dbUser: UserType): UserViewModel {
-    return {
-      id: dbUser.id,
-      login: dbUser.accountData.login,
-      email: dbUser.accountData.email,
-      createdAt: dbUser.accountData.createdAt,
-    }
-  }
-  _getUsersViewModelDetail({
-    items,
-    totalCount,
-    pagesCount,
-    page,
-    pageSize,
-  }: ResponseViewModelDetail<UserType>): ResponseViewModelDetail<UserViewModel> {
-    return {
-      pagesCount,
-      page,
-      pageSize,
-      totalCount,
-      items: items.map(item => ({
-        id: item.id,
-        login: item.accountData.login,
-        email: item.accountData.email,
-        createdAt: item.accountData.createdAt,
-      })),
-    }
-  }
-  _getUserAuthViewModel(dbUser: UserType): UserAuthViewModel {
-    return {
-      userId: dbUser.id,
-      login: dbUser.accountData.login,
-      email: dbUser.accountData.email,
-    }
   }
 }

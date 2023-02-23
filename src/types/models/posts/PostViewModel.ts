@@ -26,5 +26,3 @@ export type PostViewModel = {
   createdAt?: string
   extendedLikesInfo: ExtendedLikesInfo
 }
-
-

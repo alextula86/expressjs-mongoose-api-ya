@@ -1,6 +1,17 @@
-import mongoose from 'mongoose'
-import { AccountDataType, EmailConfirmationType, PasswordRecoveryType, UserType } from '../types'
-const { Schema } = mongoose
+import { Schema } from 'mongoose'
+import { add } from 'date-fns'
+import { trim } from 'lodash'
+import { generateUUID } from '../utils'
+
+import {
+  AccountDataType,
+  EmailConfirmationType,
+  PasswordRecoveryType,
+  UserType,
+  UserMethodsType,
+} from '../types'
+
+import { UserModel, UserModelFullType } from '../models'
 
 const accountDataSchema = new Schema<AccountDataType>({
   login: {
@@ -66,7 +77,7 @@ const passwordRecoverySchema = new Schema<PasswordRecoveryType>({
   },
 })
 
-export const userSchema = new Schema<UserType>({
+export const userSchema = new Schema<UserType, UserModelFullType, UserMethodsType>({
   id: {
     type: String,
     required: [true, 'The id field is required'],
@@ -91,5 +102,47 @@ export const userSchema = new Schema<UserType>({
     type: String,
     default: '',
   },
+})
+
+userSchema.method('canBeConfirmed', function canBeConfirmed() {
+  const that = this as UserType
+  return that.emailConfirmation.expirationDate > new Date() && !that.emailConfirmation.isConfirmed
+})
+
+userSchema.method('confirm', function confirm() {
+  const that = this as UserType & UserMethodsType
+  if (!that.canBeConfirmed()) throw new Error(`Account can't be confirm!`)
+  if (that.emailConfirmation.isConfirmed) throw new Error(`Already confirmed account can't be confirmed again!`)
+  that.emailConfirmation.isConfirmed = true
+})
+
+userSchema.static('make', function make(login: string, passwordHash: string, email: string) {
+  // Генерируем код для подтверждения email
+  const confirmationCode = generateUUID()
+
+  const accountData = {
+    login: trim(String(login)),
+    email: trim(String(email)),
+    passwordHash,
+    createdAt: new Date().toISOString(),
+  }
+
+  const emailConfirmation = {
+    confirmationCode,
+    expirationDate: add(new Date(), { hours: 1, minutes: 30 }),
+    isConfirmed: false,
+  }
+
+  const passwordRecovery = {
+    recoveryCode: '',
+    expirationDate: new Date(),
+    isRecovered: true,
+  }
+
+  const refreshToken = ''
+  
+  const user = new UserType(accountData, emailConfirmation, passwordRecovery, refreshToken)
+  
+  return new UserModel(user)
 })
   

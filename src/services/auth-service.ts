@@ -1,16 +1,15 @@
 import { injectable, inject } from 'inversify'
-import { trim } from 'lodash'
 import bcrypt from 'bcrypt'
 import { add } from 'date-fns'
 import { UserService } from './user-service'
 import { UserRepository } from '../repositories'
 import { jwtService } from '../application'
 import { emailManager } from '../managers'
-import { getNextStrId, generateUUID } from '../utils'
+import { generateUUID } from '../utils'
+import { UserModel } from '../models'
 
 import {
   UserType,
-  UserViewModel,
   CreaetUserService,
 } from '../types'
 
@@ -25,46 +24,24 @@ export class AuthService {
     login,
     password,
     email,
-  }: CreaetUserService): Promise<UserViewModel | null> {
+  }: CreaetUserService): Promise<UserType | null> {
     // Формируем соль
     const passwordSalt = bcrypt.genSaltSync(10)
     // Формируем хэш пароля
     const passwordHash = await this.userService._generateHash(password, passwordSalt)
-    // Генерируем код для подтверждения email
-    const confirmationCode = generateUUID()
-    // Формируем пользователя
-    const newUser: UserType = {
-      id: getNextStrId(),
-      accountData: {
-        login: trim(String(login)),
-        email: trim(String(email)),
-        passwordHash,
-        createdAt: new Date().toISOString(),
-      },
-      emailConfirmation: {
-        confirmationCode,
-        expirationDate: add(new Date(), { hours: 1, minutes: 30 }),
-        isConfirmed: false,
-      },
-      passwordRecovery: {
-        recoveryCode: '',
-        expirationDate: new Date(),
-        isRecovered: true,
-      },
-      refreshToken: '',
-    }
-
     // Создаем пользователя
-    const registeredUser = await this.userRepository.createdUser(newUser)
+    const madeUser = UserModel.make(login, passwordHash, email)
+    // Сохраняем пользователя в базе
+    const registeredUser = await this.userRepository.save(madeUser)
 
     try {
       // Отправляем код подтверждения email
-      await emailManager.sendEmailCreatedUser(newUser.accountData.email, confirmationCode)
+      await emailManager.sendEmailCreatedUser(registeredUser.accountData.email, registeredUser.emailConfirmation.confirmationCode)
       // Возвращаем сформированного пользователя
       return registeredUser
     } catch (error) {
       // Если письмо не отправилось, то удаляем добавленного пользователя
-      await this.userRepository.deleteUserById(newUser.id)
+      await this.userRepository.deleteUserById(registeredUser.id)
       // Возвращаем null
       return null
     }
@@ -142,11 +119,27 @@ export class AuthService {
   }
   // Подтверждение email по коду
   async confirmEmail(code: string): Promise<boolean> {
-    // Обновляем признак подтвержения по коду подтверждения
-    const isConfirmed = await this.userRepository.updateConfirmationByCode(code)
+    // Ищем пользователя по коду подтверждения email
+    const user = await this.userRepository.findByConfirmationCode(code)
 
-    // Возвращаем подтвержен(true) / не подтвержден(false)
-    return isConfirmed
+    // Если пользователь по коду подтверждения email не найден, возвращаем false
+    if (!user) {
+      return false
+    }
+
+    // Если дата для подтверждения email по коду просрочена
+    // Если email уже подтвержден
+    // Возвращаем false
+    if (!user.canBeConfirmed()) {
+      return false
+    }
+
+    // Обновляем признак подтвержения
+    user.confirm()
+    const createdUser = await this.userRepository.save(user)
+
+    // Возвращаем подтвержен(true)
+    return !!createdUser
   }
   // Повторная отправка кода подтверждения email
   async resendingCode(email: string): Promise<boolean> {

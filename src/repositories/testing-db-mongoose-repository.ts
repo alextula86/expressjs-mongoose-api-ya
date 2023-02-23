@@ -2,10 +2,11 @@ import {
   BlogModel,
   PostModel,
   CommentModel,
-  UserModel,
   DeviceModel,
   SessionModel,
 } from './db-mongoose'
+
+import { UserModel } from '../models'
 import { RepositoryTestingType } from '../types'
 
 export const testingRepository: RepositoryTestingType = {

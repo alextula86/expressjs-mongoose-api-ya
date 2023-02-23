@@ -19,6 +19,11 @@ export type PasswordRecoveryType = {
   isRecovered: boolean
 }
 
+export type UserMethodsType = {
+  canBeConfirmed: () => boolean
+  confirm: () => void
+}
+
 export class UserType {
   id: string
   constructor(

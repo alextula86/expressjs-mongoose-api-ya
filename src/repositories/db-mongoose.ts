@@ -2,7 +2,6 @@ import mongoose from 'mongoose'
 import * as dotenv from 'dotenv'
 
 import {
-  userSchema,
   blogSchema,
   postSchema,
   commentSchema,
@@ -20,7 +19,6 @@ if (!mongoUri) {
 
 mongoose.set('strictQuery', true)
 
-export const UserModel = mongoose.model('users', userSchema)
 export const BlogModel = mongoose.model('blogs', blogSchema)
 export const PostModel = mongoose.model('posts', postSchema)
 export const CommentModel = mongoose.model('comments', commentSchema)
